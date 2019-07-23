@@ -21,6 +21,16 @@ const config = {
                 use: [
                     'babel-loader'
                 ]
+            },{
+              test: /.css$/,
+              use: [
+                {
+                   loader: 'style-loader'
+                },
+                {
+                   loader: 'css-loader'
+                }
+              ]
             },
             {
                 test: /\.(ttf|eot|svg|gif|jpg|png)(\?[\s\S]+)?$/,
