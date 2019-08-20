@@ -464,7 +464,7 @@ function nblSolutionTemplate(references){
 // let randonInt = Math.floor(Math.random() * 100),
 // a = parseInt(references['paramsArr'][0]['value']),
 // b = parseInt(references['paramsArr'][1]['value']);
-  let numberLine = `<number_line name="nbl1"><start text="${references.start}"x="${references.start}"/><repeat val="(${references.end}/${references.interval}-1)" index="i"><mark text="$${references.start}+(i+1)*${references.interval}" x = "$${references.start}+(i+1)*${references.interval}"/>`;
+  let numberLine = `<number_line name="nbl1"><start text="${references.start}"x="${references.start}"/><repeat val="(${references.end}/${references.interval}-1)" index="i"><mark text="${references.start}+(i+1)*${references.interval}" x = "${references.start}+(i+1)*${references.interval}"/>`;
       numberLine += `</repeat><end text="${references.end}" x = "${references.end}"/></number_line>`;
   let numberLineRef = `<solution><cond><number_line_ref name="nbl1"/>.containsExactly(${references.point})</solution>`;
 
