@@ -527,7 +527,7 @@ function tutelageRefTempalte(references){
 function mcqfibSolutionTemplate(references){
   let mcq = multipleChoiseSolutionTemplate(references);
   let fib = fibSolutionTemplate(references);
-  return fib+mcq;
+  return mcq+fib;
 }
 
 function solutionTemplate(references){
