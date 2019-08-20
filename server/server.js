@@ -563,7 +563,7 @@ function solutionTemplate(references){
   else if(references.ques_type==="tape"){
     return tapSolutionTemplate(references);
   }
-  else if(references.ques_type==="nbl"){
+  else if(references.ques_type==="nbl" || references.ques_type==="numberline"){
     return nblSolutionTemplate(references);
   }
   else if(references.ques_type==="ss"){
