@@ -464,9 +464,9 @@ function nblSolutionTemplate(references){
 // let randonInt = Math.floor(Math.random() * 100),
 // a = parseInt(references['paramsArr'][0]['value']),
 // b = parseInt(references['paramsArr'][1]['value']);
-  let numberLine = `<number_line name="nbl1"><start text="${references.start}"x="${references.start}"/><repeat val="(${references.end}-${references.interval})" index="i"><mark text="$${references.start}+(i+1)*interval$" x = "$${references.start}+(i+1)*interval$"/>`;
+  let numberLine = `<number_line name="nbl1"><start text="${references.start}"x="${references.start}"/><repeat val="(${references.end}/${references.interval}-1)" index="i"><mark text="$${references.start}+(i+1)*${references.interval}" x = "$${references.start}+(i+1)*${references.interval}"/>`;
       numberLine += `</repeat><end text="${references.end}" x = "${references.end}"/></number_line>`;
-  let numberLineRef = `<solution><cond><number_line_ref name="nbl1"/>.containsExactly(${b}) </solution>`;
+  let numberLineRef = `<solution><cond><number_line_ref name="nbl1"/>.containsExactly(${references.point})</solution>`;
 
   return `<group>${references.ans_txt}${numberLine}<solutions>${numberLineRef}</solutions></group>`;
 }
@@ -841,6 +841,11 @@ function uploadXLSX(workbook, inputfiletoread){
     if(arrEle.col1 && arrEle.col1=='Interval'){
       if(arrEle.col2!==undefined){
         questionObj['interval'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Point_1'){
+      if(arrEle.col2!==undefined){
+        questionObj['point'] = arrEle.col2;
       }
     }
     //ss
