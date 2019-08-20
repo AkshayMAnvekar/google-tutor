@@ -328,7 +328,7 @@ function multipleChoiseSolutionTemplate(ref){
   // }
   let finalQuestionXML = '';
   let alphabetArray= "abcdefghikjklmnopqrstuvwxyzabcdefghikjklmnopqrstuvwxyz";
-  let counter = 0;
+  let counter = 2;
 
   for(let references of totalQuestions){
     console.log(references);
