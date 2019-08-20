@@ -34,62 +34,63 @@ app.use('/dist', express.static(path.join(CURRENT_WORKING_DIR, 'dist')))
 
 
 app.get('/list-wrksheets', (req, res)=>{
-       res.send(JSON.parse(fs.readFileSync('public/xmls/worksheets.json')));
+  res.send(JSON.parse(fs.readFileSync('public/xmls/worksheets.json')));
 })
 
 app.get('/test-xlsx', (req, res)=>{
 	var workbook = XLSX.readFile('public/xmls/zzzz.xlsx');
-    
-
-
 	var sheet_name_list = workbook.SheetNames;
-
 	let xlsxJSON = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]], {defVal:""});
 	let variableChecker = 0;
-
-    
 	var questionObj = {};
 	var arrayOfTemplateIdsCols = [];
-    questionObj['paramsArr'] = [];
-    
-    questionObj['prob_tmp_name'] = 'zzzzzz';
-	for(let arrEle of xlsxJSON){
-		 if(arrEle.col1=='Tutor ID'){
-		 	questionObj['work_tmp_name'] = arrEle.col2;
-            variableChecker = 1;
-		 }else if(arrEle.col1=='Conditions'){
-            variableChecker = 0;
-		 }
-		 if(arrEle.col1=='QUESTION'){
-		 	questionObj['ques_txt'] += arrEle.col2;
-		 }
-		 if(arrEle.col1=='QuesType'){
-            questionObj['ques_type'] = arrEle.col2;
-		 }
-		 if(arrEle.col1=='Answer stem'){
-		 	questionObj['ans_txt'] += arrEle.col2;
-		 }
-		 if(variableChecker==1 && arrEle.col1!='Tutor ID'){
-		 	questionObj['paramsArr'].push({
-                key : arrEle.col1,
-         	 	value : arrEle.col2,
-		        type : arrEle.col3
-            })
-		 } 
-	}
-    
-        let data = [
-		    	 tutelageTempalte(questionObj),
-		         problemTemplate(questionObj),
-		         tutelageRefTempalte(),
-		         worksheetTempalte(questionObj),
-		         worksheetRefTempalte(questionObj)
-		    ]
-	     let xml = jsontoxml(data);
 
-		res.send({
-			 test : xml
-		})
+  questionObj['paramsArr'] = [];
+  questionObj['prob_tmp_name'] = 'zzzzzz';
+
+  for(let arrEle of xlsxJSON){
+    if(arrEle.col1=='Tutor ID'){
+    	questionObj['work_tmp_name'] = arrEle.col2;
+      variableChecker = 1;
+    }
+    else if(arrEle.col1=='Conditions') {
+     variableChecker = 0;
+    }
+
+    if(arrEle.col1=='QUESTION'){
+    	questionObj['ques_txt'] += arrEle.col2;
+    }
+
+    if(arrEle.col1=='QuesType'){
+      questionObj['ques_type'] = arrEle.col2;
+    }
+
+    if(arrEle.col1=='Answer stem'){
+    	questionObj['ans_txt'] += arrEle.col2;
+    }
+
+    if(variableChecker==1 && arrEle.col1!='Tutor ID'){
+    	questionObj['paramsArr'].push({
+        key : arrEle.col1,
+       	value : arrEle.col2,
+        type : arrEle.col3
+      })
+		 }
+	}
+
+  let data = [
+    tutelageTempalte(questionObj),
+    problemTemplate(questionObj),
+    tutelageRefTempalte(),
+    worksheetTempalte(questionObj),
+    worksheetRefTempalte(questionObj)
+  ]
+
+  let xml = jsontoxml(data);
+
+  res.send({
+  	 test : xml
+  })
 	    // sheet_name_list.forEach((y)=>{
      //       var worksheet = workbook.Sheets[y];
      //       var headers = {};
@@ -118,116 +119,116 @@ app.get('/test-xlsx', (req, res)=>{
 	    // })
 	// const result = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
 	// console.log(XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]], {defVal:""}))
-	
+
 })
 
 
 
 
 app.get('*', (req, res)=>{
-   res.send(Template());
+  res.send(Template());
 })
 
 function tutelageTempalte(references){
-		 let params = [];
-		 if(references.paramsArr.length>0){
-		 	for(let x of references.paramsArr){
-	            params.push({
-	            	   name: 'param',
-	            	   attrs: {
-	            	   	  name: x.key,
-	            	   	  type: x.type
-	            	   }
-	            })
-		 	}
-		 }
-	     return {
-	     	  name : 'tutelage_tmpl',
-	     	  attrs: {
-	     	  	   'name': references.work_tmp_name
-	     	  },
-              children:[
-                    {
-                    	name:'params',children : params,
-                    }
-              ]
-	     }
+  let params = [];
+  if(references.paramsArr.length>0){
+    for(let x of references.paramsArr){
+      params.push({
+        name: 'param',
+        attrs: {
+          name: x.key,
+          type: x.type
+        }
+      })
+    }
+  }
+  return {
+    name : 'tutelage_tmpl',
+    attrs: {
+      'name': references.work_tmp_name
+    },
+    children:[
+      {
+        name:'params',children : params,
+      }
+    ]
+  }
 }
 
 function worksheetTempalte(references){
-	     let prob_refs = [];  
-	     let probRefs = `<problem_ref name="${references.prob_tmp_name}">`;      
-	     if(references.paramsArr.length>0){
-		 	for(let x of references.paramsArr){
-	            // prob_refs.push({
-	            // 	   name: 'bind',
-	            // 	   attrs: {
-	            // 	   	  name: x.key,
-	            // 	   	  val: x.value
-	            // 	   }
-	            // })
-	            if(x.type=='int')
-	                 probRefs += `<bind name="${x.key}" val="${x.value}"/>`;
-	             else
-	             	 probRefs += `<bind name="${x.key}" type="${x.type}"><img src="${x.value}" width="20px"/></bind>`;
-		 	}
-	     }
-         return probRefs += `</problem_ref>`;
-	       
+  let prob_refs = [];
+  let probRefs = `<problem_ref name="${references.prob_tmp_name}">`;
+  if(references.paramsArr.length>0){
+    for(let x of references.paramsArr){
+      // prob_refs.push({
+      // 	   name: 'bind',
+      // 	   attrs: {
+      // 	   	  name: x.key,
+      // 	   	  val: x.value
+      // 	   }
+      // })
+      if(x.type=='int')
+        probRefs += `<bind name="${x.key}" val="${x.value}"/>`;
+      else
+        probRefs += `<bind name="${x.key}" type="${x.type}"><img src="${x.value}" width="20px"/></bind>`;
+    }
+  }
+  return probRefs += `</problem_ref>`;
 
-	     // return {
-	     // 	  name : 'worksheet_tmpl',
-	     // 	  attrs: {
-	     // 	  	   'name': references.work_tmp_name
-	     // 	  },
-	     // 	  children:[
-      //               {name:'problem_ref', 
-      //               attrs: {
-      //                    'name': references.prob_tmp_name
-      //               },
-      //               children : prob_refs}
-      //         ]
-	     // }
+
+  // return {
+  // 	  name : 'worksheet_tmpl',
+  // 	  attrs: {
+  // 	  	   'name': references.work_tmp_name
+  // 	  },
+  // 	  children:[
+  //               {name:'problem_ref',
+  //               attrs: {
+  //                    'name': references.prob_tmp_name
+  //               },
+  //               children : prob_refs}
+  //         ]
+  // }
 }
 
-
 function problemRefTemplate(references){
-	     let prob_refs = [];        
-	     if(references.paramsArr.length>0){
-		 	for(let x of references.paramsArr){
-	            prob_refs.push({
-	            	   name: 'bind',
-	            	   attrs: {
-	            	   	  name: x.key,
-	            	   	  val: x.value
-	            	   }
-	            })
-		 	}
-	     }
-	     return {
-                      name:'problem_ref', 
-                      attrs: {
-                         'name': references.prob_tmp_name
-                      },
-                      children : prob_refs
-                }
+  let prob_refs = [];
+  if(references.paramsArr.length>0){
+    for(let x of references.paramsArr){
+      prob_refs.push({
+        name: 'bind',
+        attrs: {
+          name: x.key,
+          val: x.value
+        }
+      })
+    }
+  }
+  return {
+    name:'problem_ref',
+    attrs: {
+      'name': references.prob_tmp_name
+    },
+    children : prob_refs
+  }
 }
 
 function problemTemplate(references){
-	 let params = [];
-	 let multiQuesText = '';
-	 if(references.paramsArr.length>0){
+  let params = [];
+  let multiQuesText = '';
+  if(references.paramsArr.length>0){
 	 	for(let x of references.paramsArr){
-            params.push({
-            	   name: 'param',
-            	   attrs: {
-            	   	  name: x.key,
-            	   	  type: x.type
-            	   }
-            })
-	 	}
-	 }
-     let text = `${references.ques_txt}`;
+      params.push({
+        name: 'param',
+        attrs: {
+          name: x.key,
+          type: x.type
+        }
+      })
+	  }
+  }
+
+  let text = `${references.ques_txt}`;
 
   //    if(references.ques_type==="fib"){
   //       let ques_txt = (references.ques_txt).replace('___', '<fib type="int" name="AA"/>');
@@ -262,12 +263,12 @@ function problemTemplate(references){
       //    let src = (imgData[0]).replace("\n", "").trim(),
       //        width = (imgData[1]).replace("\n", "").trim(),
       //        height = (imgData[2]).replace("\n", "").trim();
-      //       imgData = `<img src=${src} width=${width} height=${height} />`;
+      //       imgData = `<img src=${src} width=${width} height=${height}/>`;
       //       text += imgData;
       // }
-       let paramsList = '';
-       if(references.paramsArr.length>0){
-        paramsList += `<params>`
+  let paramsList = '';
+  if(references.paramsArr.length>0){
+    paramsList += `<params>`
 	 	for(let x of references.paramsArr){
 	 		paramsList += `<param name="${x.key}" type="${x.type}"/>`
             // params.push({
@@ -277,15 +278,15 @@ function problemTemplate(references){
             // 	   	  type: x.type
             // 	   }
             // })
-	 	}  
-            if(references.conditions.length>0){
-            	paramsList += genrateConstrains(references);
-            }
-	 	    paramsList += `</params>`;
-	    }
+	 	}
+    if(references.conditions.length>0){
+      paramsList += genrateConstrains(references);
+    }
+    paramsList += `</params>`;
+	}
 
-	    return `<problem_tmpl name="${references.prob_tmp_name}" width="400">${paramsList}${text}${solutionTemplate(references)}</problem_tmpl>`
-     
+  return `<problem_tmpl name="${references.prob_tmp_name}" width="400">${paramsList}${text}${solutionTemplate(references)}</problem_tmpl>`
+
 	 // return {
   //             name : `problem_tmpl`,
   //             attrs: {
@@ -306,55 +307,56 @@ function problemTemplate(references){
 }
 
 function checkBoxing(references){
-   let A = references['boxing'][0],
-       B = references['boxing'][1],
-       randonInt = Math.floor(Math.random() * 100);
-   return `<group><boxing name="BOX_${randonInt}" count="A*B" limit="Math.max(A-1,3)">$P$</boxing><solutions><solution><cond><boxing_ref name="BOX_${randonInt}" field="group"/> == $A$</cond><cond><boxing_ref name="BOX_${randonInt}" field="size"/> == $B$</cond></solution></solutions></group>`;
+  let A = references['boxing'][0],
+      B = references['boxing'][1],
+      randonInt = Math.floor(Math.random() * 100);
+
+  return `<group><boxing name="BOX_${randonInt}" count="A*B" limit="Math.max(A-1,3)">$P$</boxing><solutions><solution><cond><boxing_ref name="BOX_${randonInt}" field="group"/> == $A$</cond><cond><boxing_ref name="BOX_${randonInt}" field="size"/> == $B$</cond></solution></solutions></group>`;
 }
 
 function multipleChoiseSolutionTemplate(ref){
 
-	let totalQuestions = ref.sub_questions;
-	// let options = (references.ans_txt).split("\n");
-	// let optionsWrapper = '';
-	// let c = 0, sol='';
-	// for(let x=0; x<options.length; x++){
-	// 	let k = options[x].split('##');
-	// 	let opt = k[1]==1? "AA" : "c"+c
-	// 	optionsWrapper += '<cond><choice_ref name="'+opt+'"/>== '+k[1]+'</cond>';
-	// 	++c;
-	// }
-	let finalQuestionXML = '';
-    let alphabetArray= "abcdefghikjklmnopqrstuvwxyzabcdefghikjklmnopqrstuvwxyz";
-    let counter = 0;
+  let totalQuestions = ref.sub_questions;
+  // let options = (references.ans_txt).split("\n");
+  // let optionsWrapper = '';
+  // let c = 0, sol='';
+  // for(let x=0; x<options.length; x++){
+  // 	let k = options[x].split('##');
+  // 	let opt = k[1]==1? "AA" : "c"+c
+  // 	optionsWrapper += '<cond><choice_ref name="'+opt+'"/>== '+k[1]+'</cond>';
+  // 	++c;
+  // }
+  let finalQuestionXML = '';
+  let alphabetArray= "abcdefghikjklmnopqrstuvwxyzabcdefghikjklmnopqrstuvwxyz";
+  let counter = 0;
 
-	for(let references of totalQuestions){
-		    console.log(references);
-			let count = references.mcq_choises.length;
-			let mcqChioseCount = 1;
-			let choises = '';
+  for(let references of totalQuestions){
+    console.log(references);
+    let count = references.mcq_choises.length;
+    let mcqChioseCount = 1;
+    let choises = '';
 
-			//FIB with MCQ
-		    let mcqQuestions = '';
-		    let group = `<group>`;
-		    if(references.mcq_question || totalQuestions.length>1){
-		       mcqQuestions = `<p>${references.mcq_question}</p>`;
-		       group = `<group name='${ref.prob_tmp_name}' type='MCQ'>`
-		    }
-			//
-			for(let x of references.mcq_choises){
-		         choises += `<choice name="${alphabetArray[counter].toUpperCase()}${mcqChioseCount}">${x}</choice>`;
-		         ++mcqChioseCount;
-			}
-			let choiseAnswer = references.mcq_answer;
-			if(references.mcq_answer && references.mcq_answer.match('Choice')){
-		        choiseAnswer = references.mcq_answer.split(' ')[1];
-			}
-			let optionsWrapper = `<repeat val="${count}" index="i"><cond><choice_ref name="${alphabetArray[counter].toUpperCase()}$i+1$"/>==$(i)==(${parseInt(choiseAnswer)-1})$</cond></repeat>`;
-			finalQuestionXML += `${group}${mcqQuestions}${choises}<solutions><solution>${optionsWrapper}</solution></solutions></group>`;
-			++counter;
-	}
-     return finalQuestionXML;
+    //FIB with MCQ
+    let mcqQuestions = '';
+    let group = `<group>`;
+    if(references.mcq_question || totalQuestions.length>1){
+      mcqQuestions = `<p>${references.mcq_question}</p>`;
+      group = `<group name='${ref.prob_tmp_name}' type='MCQ'>`
+    }
+    //
+    for(let x of references.mcq_choises){
+      choises += `<choice name="${alphabetArray[counter].toUpperCase()}${mcqChioseCount}">${x}</choice>`;
+      ++mcqChioseCount;
+    }
+    let choiseAnswer = references.mcq_answer;
+    if(references.mcq_answer && references.mcq_answer.match('Choice')){
+      choiseAnswer = references.mcq_answer.split(' ')[1];
+    }
+    let optionsWrapper = `<repeat val="${count}" index="i"><cond><choice_ref name="${alphabetArray[counter].toUpperCase()}$i+1$"/>==$(i)==(${parseInt(choiseAnswer)-1})$</cond></repeat>`;
+    finalQuestionXML += `${group}${mcqQuestions}${choises}<solutions><solution>${optionsWrapper}</solution></solutions></group>`;
+    ++counter;
+  }
+  return finalQuestionXML;
 }
 
 function fibSolutionTemplate(references){
@@ -363,8 +365,8 @@ function fibSolutionTemplate(references){
 	for(let x of references.fib_conditions[0]){
         ans_txt = ans_txt.replace('<FIB_'+count+'>', x)
         ++count;
-	}	
-    //CHECK ARRAY 
+	}
+    //CHECK ARRAY
     if(references['array'].length>0){
     	return arraySolutionTempalte(references);
     }
@@ -384,242 +386,257 @@ function arraySolutionTempalte(references){
   return `<group>${references.ans_txt}${array}<solutions>${fibSolution}</solutions></group>`;
 }
 
-
 function boxSolutionTemplate(references){
-	 let colGrid = `<grid columns="50% 50%" gap="2px 20px">`;
-	 let fibCounter = 1;
-	 for(let x=0; x<references.slotLArray.length; x++){
-	 	 let a = references.slotLArray[x];
-	 	 let b = references.slotRArray[x];
-	 	 if(a.match('<FIB_')){
-	 	 	a = a.replace('<FIB_'+fibCounter+'>', `<fib type="int" name="fib${fibCounter}"/>`);
-           ++fibCounter;
-	 	 }
-	 	 if(b.match('<FIB_')){
-	 	 	b = b.replace('<FIB_'+fibCounter+'>', `<fib type="int" name="fib${fibCounter}"/>`);
-            ++fibCounter;;
-	 	 }
-	 	 colGrid += `<cell><slot name="slot1_${x+1}">${a}</slot></cell><cell><slot name="slot2_${x+1}">${b}</slot></cell>`;
-	 }
-     colGrid += `</grid>`;
-     let solutionsRefers = `<solution>`;
-     for(let y=0; y<references.slotLArraySolution.length; y++){
-     	 let a = references.slotLArraySolution[y][references.slotLArraySolution[y].length-2];
-         solutionsRefers += `<cond><slot_ref name="slot1_${y+1}"/>=={"slot2_${parseInt(a)+1}"}</cond>`;
-     }
-     solutionsRefers+= `</solution>`;
-	 return `<group>${colGrid}<solutions>${solutionsRefers}<solution>${references.fib_conditions[1]}</solution></solutions></group>`;
+  let colGrid = `<grid columns="50% 50%" gap="2px 20px">`;
+  let fibCounter = 1;
+  for(let x=0; x<references.slotLArray.length; x++){
+    let a = references.slotLArray[x];
+    let b = references.slotRArray[x];
+    if(a.match('<FIB_')){
+      a = a.replace('<FIB_'+fibCounter+'>', `<fib type="int" name="fib${fibCounter}"/>`);
+      ++fibCounter;
+    }
+    if(b.match('<FIB_')){
+      b = b.replace('<FIB_'+fibCounter+'>', `<fib type="int" name="fib${fibCounter}"/>`);
+      ++fibCounter;;
+    }
+    colGrid += `<cell><slot name="slot1_${x+1}">${a}</slot></cell><cell><slot name="slot2_${x+1}">${b}</slot></cell>`;
+  }
+  colGrid += `</grid>`;
+  let solutionsRefers = `<solution>`;
+  for(let y=0; y<references.slotLArraySolution.length; y++){
+    let a = references.slotLArraySolution[y][references.slotLArraySolution[y].length-2];
+    solutionsRefers += `<cond><slot_ref name="slot1_${y+1}"/>=={"slot2_${parseInt(a)+1}"}</cond>`;
+  }
+  solutionsRefers+= `</solution>`;
+  return `<group>${colGrid}<solutions>${solutionsRefers}<solution>${references.fib_conditions[1]}</solution></solutions></group>`;
 }
 
 function awsSolutionTemplate(references){
-	 let randonInt = Math.floor(Math.random() * 100);
-	  references.array_row = references['paramsArr'][0]['value'];
-	  references.array_column = references['paramsArr'][1]['value'];
-     let colGrid = `<boxing_array name="ba1" count="${references.count}" limit="${references.limit}">$P$</boxing_array>`;
-     let totalElements = parseInt(references.array_row)*parseInt(references.array_column);
-   
-     let solutionsRefers = `<solution><boxing_array_ref name="ba1" />.row==${references.array_row}`;
-         solutionsRefers += `&& <boxing_array_ref name="ba1" />.column==${references.array_column}`;
-         solutionsRefers += `<boxing_array_ref name="ba1" />.row * <boxing_array_ref name="ba1" />.column==${totalElements}</solution>`;
-	 return `<group>${colGrid}<solutions>${solutionsRefers}</solutions></group>`;
+  let randonInt = Math.floor(Math.random() * 100);
+      references.array_row = references['paramsArr'][0]['value'];
+      references.array_column = references['paramsArr'][1]['value'];
+
+  let colGrid = `<boxing_array name="ba1" count="${references.count}" limit="${references.limit}">$P$</boxing_array>`;
+  let totalElements = parseInt(references.array_row)*parseInt(references.array_column);
+  let solutionsRefers = `<solution><boxing_array_ref name="ba1"/>.row==${references.array_row}`;
+      solutionsRefers += `&& <boxing_array_ref name="ba1"/>.column==${references.array_column}`;
+      solutionsRefers += `<boxing_array_ref name="ba1"/>.row * <boxing_array_ref name="ba1"/>.column==${totalElements}</solution>`;
+
+  return `<group>${colGrid}<solutions>${solutionsRefers}</solutions></group>`;
 }
 
-
 function clockSolutionTemplate(references){
-	 let randonInt = Math.floor(Math.random() * 100),
-	     clock = `<clock name="clock${randonInt}"/>`,
-	     clockRef = `<solution><cond><clock_ref name="clock${randonInt}" />=="${references.time}"</cond></solution>`;
-	 return `<group>${references.ans_txt}${clock}<solutions>${clockRef}</solutions></group>`;
+  let randonInt = Math.floor(Math.random() * 100),
+      clock = `<clock name="clock${randonInt}"/>`,
+      clockRef = `<solution><cond><clock_ref name="clock${randonInt}"/>=="${references.time}"</cond></solution>`;
+
+  return `<group>${references.ans_txt}${clock}<solutions>${clockRef}</solutions></group>`;
 }
 
 function tapSolutionTemplate(references){
-   	 let randonInt = Math.floor(Math.random() * 100),
-   	     a = `"${references['paramsArr'][0]['value']}"`,
-   	     k = [],
-	     b = parseInt(references['paramsArr'][1]['value']);
-         while(b>0){
-         	k.push(a);
-            --b;
-         }
-         let tape = `<tape name="tape${randonInt}"/>`,
-	     tapeRef = `<solution><cond><tape_ref name="tape${randonInt}" />.inOrder(${k.toString()})<cond></solution>`;
-	 return `<group>${references.ans_txt}${tape}<solutions>${tapeRef}</solutions></group>`;
+  let randonInt = Math.floor(Math.random() * 100),
+      a = `"${references['paramsArr'][0]['value']}"`,
+      k = [],
+      b = parseInt(references['paramsArr'][1]['value']);
+  while(b>0) {
+    k.push(a);
+    --b;
+  }
+  let tape = `<tape name="tape${randonInt}"/>`,
+      tapeRef = `<solution><cond><tape_ref name="tape${randonInt}"/>.inOrder(${k.toString()})<cond></solution>`;
+
+  return `<group>${references.ans_txt}${tape}<solutions>${tapeRef}</solutions></group>`;
 }
 
+
+// function nblSolutionTemplate(references){
+//    	 let randonInt = Math.floor(Math.random() * 100),
+//    	     a = parseInt(references['paramsArr'][0]['value']),
+// 	     b = parseInt(references['paramsArr'][1]['value']);
+// 	     let numberLine = `<number_linename="nbl${randonInt}"><start text="$A$:00"x="0"/><repeat val="(${references.end}/${references.interval}/)-1" index="i"><mark text="4:20" x = "$(i+1)*interval$"/>`;
+// 			 numberLine += `</repeat><end text="$A$:interval" x = "End"/></number_line>`;
+// 	     let numberLineRef = `<solution><cond><number_line_ref name="nbl${randonInt}"/>.containsExactly(${b}) </solution>`;
+// 	 return `<group>${references.ans_txt}${numberLine}<solutions>${numberLineRef}</solutions></group>`;
+// }
 
 function nblSolutionTemplate(references){
-   	 let randonInt = Math.floor(Math.random() * 100),
-   	     a = parseInt(references['paramsArr'][0]['value']),
-	     b = parseInt(references['paramsArr'][1]['value']);
-	     let numberLine = `<number_linename="nbl${randonInt}"><start text="$A$:00"x="0"/><repeat val="(${references.end}/${references.interval}/)-1" index="i"><mark text="4:20" x = "$(i+1)*interval$" />`;
-			 numberLine += `</repeat><end text="$A$:interval" x = "End" /></number_line>`;
-	     let numberLineRef = `<solution><cond><number_line_ref name="nbl${randonInt}" />.containsExactly(${b}) </solution>`;
-	 return `<group>${references.ans_txt}${numberLine}<solutions>${numberLineRef}</solutions></group>`;
+// let randonInt = Math.floor(Math.random() * 100),
+// a = parseInt(references['paramsArr'][0]['value']),
+// b = parseInt(references['paramsArr'][1]['value']);
+  let numberLine = `<number_line name="nbl1"><start text="${references.start}"x="${references.start}"/><repeat val="(${references.end}-${references.interval})" index="i"><mark text="$${references.start}+(i+1)*interval$" x = "$${references.start}+(i+1)*interval$"/>`;
+      numberLine += `</repeat><end text="${references.end}" x = "${references.end}"/></number_line>`;
+  let numberLineRef = `<solution><cond><number_line_ref name="nbl1"/>.containsExactly(${b}) </solution>`;
+
+  return `<group>${references.ans_txt}${numberLine}<solutions>${numberLineRef}</solutions></group>`;
 }
 
-
 function ssSolutionTemplate(references){
-   	 let randonInt = Math.floor(Math.random() * 100);
-         let box = `<boxing_shading name="ss${randonInt}" count="${references.count}" limit="${references.limit}">$P$</boxing_shading>`,
-	         boxRef = `<solution><cond><boxing_shading_ref name="ss${randonInt}" />==${references.shading_ref}</cond></solution>`;
-	 return `<group>${references.ans_txt}${box}<solutions>${boxRef}</solutions></group>`;
+  let randonInt = Math.floor(Math.random() * 100);
+  let box = `<boxing_shading name="ss${randonInt}" count="${references.count}" limit="${references.limit}">$P$</boxing_shading>`,
+      boxRef = `<solution><cond><boxing_shading_ref name="ss${randonInt}"/>==${references.shading_ref}</cond></solution>`;
+
+  return `<group>${references.ans_txt}${box}<solutions>${boxRef}</solutions></group>`;
 }
 
 function bgSolutionTemplate(references){
-   	 let randonInt = Math.floor(Math.random() * 100);
-         let bg = `<bar name="bar${randonInt}" x-series="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
-	         bg += `<line_plot name="lp${randonInt}" x-range="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
-	     let bgRef = `<solution>`;
-	 
-	 for(let x=0; x<references.y_value.length; x++){
-         bgRef += `<bar_ref name="bar${randonInt}"  />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
-	 }
-	 bgRef = bgRef.slice(0, -2);
-	 bgRef += `</solution>`;
-	 return `<group>${references.ans_txt}${bg}<solutions>${bgRef}</solutions></group>`;
-}
+  let randonInt = Math.floor(Math.random() * 100);
+  let bg = `<bar name="bar${randonInt}" x-series="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+      bg += `<line_plot name="lp${randonInt}" x-range="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+  let bgRef = `<solution>`;
 
+  for(let x=0; x<references.y_value.length; x++){
+    bgRef += `<bar_ref name="bar${randonInt}" />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
+  }
+  bgRef = bgRef.slice(0, -2);
+  bgRef += `</solution>`;
+  return `<group>${references.ans_txt}${bg}<solutions>${bgRef}</solutions></group>`;
+}
 
 function lpSolutionTemplate(references){
-   	 let randonInt = Math.floor(Math.random() * 100);
-         let lp = `<line_plot name="lp${randonInt}" x-range="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
-	         lp += `<line_plot name="lp${randonInt}" x-series="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
-	     let lpRef = `<solution>`;
-	 
-	 for(let x=0; x<references.y_value.length; x++){
-         lpRef += `<line_plot_ref name="bar${randonInt}"  />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
-	 }
-	 lpRef = lpRef.slice(0, -2);
-	 lpRef += `</solution>`;
-	 return `<group>${references.ans_txt}${lp}<solutions>${lpRef}</solutions></group>`;
+  let randonInt = Math.floor(Math.random() * 100);
+  let lp = `<line_plot name="lp${randonInt}" x-range="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+      lp += `<line_plot name="lp${randonInt}" x-series="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+  let lpRef = `<solution>`;
+
+  for(let x=0; x<references.y_value.length; x++){
+    lpRef += `<line_plot_ref name="bar${randonInt}" />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
+  }
+  lpRef = lpRef.slice(0, -2);
+  lpRef += `</solution>`;
+  return `<group>${references.ans_txt}${lp}<solutions>${lpRef}</solutions></group>`;
 }
 
-
 function normalSolutionTemplate(){
-	return `<solution></solution>`;
+  return `<solution></solution>`;
 }
 
 function worksheetRefTempalte(references){
-	 	 return {
-	     	  name : 'worksheet_ref',
-	     	  attrs: {
-	     	  	   'name': references.work_tmp_name
-	     	  }
-	     }
+  return {
+    name : 'worksheet_ref',
+    attrs: {
+      'name': references.work_tmp_name
+    }
+  }
 }
 
 function tutelageRefTempalte(references){
-	 	 return `<tutelage_ref name="T1"><bind name="A"  val="A"/><bind name="B"  val="B"/><bind name="AA" ><fib_ref name="fib1"/></bind></tutelage_ref>`;
+  return `<tutelage_ref name="T1"><bind name="A"  val="A"/><bind name="B"  val="B"/><bind name="AA" ><fib_ref name="fib1"/></bind></tutelage_ref>`;
 }
 
 function mcqfibSolutionTemplate(references){
-         let mcq = multipleChoiseSolutionTemplate(references);
-         let fib = fibSolutionTemplate(references);
-         return fib+mcq;
+  let mcq = multipleChoiseSolutionTemplate(references);
+  let fib = fibSolutionTemplate(references);
+  return fib+mcq;
 }
 
 function solutionTemplate(references){
 
-	     console.log(references.sub_questions);
+  console.log(references.sub_questions);
 
+  if(references['boxing'].length>0){
+    return checkBoxing(references);
+  }
 
-	     if(references['boxing'].length>0){
-             return checkBoxing(references);
-	     }
-	     if(references.ques_type==="normal"){
-               return normalSolutionTemplate();
-	     }else if(references.ques_type==="mcq"){
-               return multipleChoiseSolutionTemplate(references);
-	     }else if(references.ques_type==="fib"){
-	     	   return fibSolutionTemplate(references);
-	     }
-	     else if(references.ques_type==="box"){
-	     	   return boxSolutionTemplate(references);
-	     }
-	     else if(references.ques_type==="aws"){
-	     	   return awsSolutionTemplate(references);
-	     }
-	     else if(references.ques_type==="clock"){
-	     	   return clockSolutionTemplate(references);
-	     }
-	     else if(references.ques_type==="tape"){
-	     	   return tapSolutionTemplate(references);
-	     }
-	     else if(references.ques_type==="nbl"){
-	     	   return nblSolutionTemplate(references);
-	     }
-	     else if(references.ques_type==="ss"){
-	     	   return ssSolutionTemplate(references);
-	     }
-	     else if(references.ques_type==="bg"){
-	     	   return bgSolutionTemplate(references);
-	     }
-	     else if(references.ques_type==="lp"){
-	     	   return lpSolutionTemplate(references);
-	     }
-	     else if(references.ques_type==="mcq/fib"){
-	     	   return mcqfibSolutionTemplate(references);
-	     }
+  if(references.ques_type==="normal") {
+    return normalSolutionTemplate();
+  }
+
+  else if(references.ques_type==="mcq") {
+    return multipleChoiseSolutionTemplate(references);
+  }
+
+  else if(references.ques_type==="fib") {
+    return fibSolutionTemplate(references);
+  }
+
+  else if(references.ques_type==="box"){
+    return boxSolutionTemplate(references);
+  }
+
+  else if(references.ques_type==="aws"){
+    return awsSolutionTemplate(references);
+  }
+  else if(references.ques_type==="clock"){
+    return clockSolutionTemplate(references);
+  }
+  else if(references.ques_type==="tape"){
+    return tapSolutionTemplate(references);
+  }
+  else if(references.ques_type==="nbl"){
+    return nblSolutionTemplate(references);
+  }
+  else if(references.ques_type==="ss"){
+    return ssSolutionTemplate(references);
+  }
+  else if(references.ques_type==="bg"){
+    return bgSolutionTemplate(references);
+  }
+  else if(references.ques_type==="lp"){
+    return lpSolutionTemplate(references);
+  }
+  else if(references.ques_type==="mcq/fib"){
+    return mcqfibSolutionTemplate(references);
+  }
 }
 
 
 app.post('/', (req, res)=>{
-	    const wrksheetName = (req.body.work_tmp_name).trim();
-	    const newwrksheetName = req.body.new_work_tmp_name ? (req.body.new_work_tmp_name).trim() : '';
-        if(newwrksheetName.length>0){
-        	req.body.work_tmp_name = newwrksheetName;
-        }
-	    const workSheets = JSON.parse(fs.readFileSync('public/xmls/worksheets.json'));
-	    if(workSheets[wrksheetName]){
-           let problemTemp = problemTemplate(req.body),
-               preWrkTemplate = JSON.parse(fs.readFileSync('public/xmls/'+wrksheetName+'.txt'));
+  const wrksheetName = (req.body.work_tmp_name).trim();
+  const newwrksheetName = req.body.new_work_tmp_name ? (req.body.new_work_tmp_name).trim() : '';
+  if(newwrksheetName.length>0){
+    req.body.work_tmp_name = newwrksheetName;
+  }
+  const workSheets = JSON.parse(fs.readFileSync('public/xmls/worksheets.json'));
+  if(workSheets[wrksheetName]){
+    let problemTemp = problemTemplate(req.body),
+        preWrkTemplate = JSON.parse(fs.readFileSync('public/xmls/'+wrksheetName+'.txt'));
 
-               //ADD PROBLEM TO TEMPLATE 
-               preWrkTemplate.unshift(problemTemp);
+    //ADD PROBLEM TO TEMPLATE
+    preWrkTemplate.unshift(problemTemp);
 
-               //ADD PROBLEM REF TO TEMPLATE
-               for(let x=0; x<preWrkTemplate.length; x++){
-               	   if(preWrkTemplate[x]['name']=='worksheet_tmpl'){
-               	   	  preWrkTemplate[x]['children'].unshift(problemRefTemplate(req.body))
-               	   }
-               }
-               //STORE NEW TEMPALTE 
-               fs.writeFileSync('public/xmls/'+wrksheetName+'.txt', JSON.stringify(preWrkTemplate))               
-               let d = jsontoxml(
-                   preWrkTemplate
-               )
-               res.send(XMLFormatter(`<xml>${d}</xml>`))
-	    }else{
-             let data = [
-		    	 tutelageTempalte(req.body),
-		         problemTemplate(req.body),
-		         tutelageRefTempalte(),
-		         worksheetTempalte(req.body),
-		         worksheetRefTempalte(req.body)
-		    ]
-	        let xml = jsontoxml(data);
-	        workSheets[newwrksheetName] = newwrksheetName;
-	        fs.writeFileSync('public/xmls/worksheets.json', JSON.stringify(workSheets))
-	        fs.writeFileSync('public/xmls/'+newwrksheetName+'.txt', JSON.stringify(data))
-	        res.send(XMLFormatter(`<xml>${xml}</xml>`))
-	    }
+    //ADD PROBLEM REF TO TEMPLATE
+    for(let x=0; x<preWrkTemplate.length; x++){
+      if(preWrkTemplate[x]['name']=='worksheet_tmpl'){
+        preWrkTemplate[x]['children'].unshift(problemRefTemplate(req.body))
+      }
+    }
+    //STORE NEW TEMPALTE
+    fs.writeFileSync('public/xmls/'+wrksheetName+'.txt', JSON.stringify(preWrkTemplate))
+    let d = jsontoxml(
+      preWrkTemplate
+    )
+    res.send(XMLFormatter(`<xml>${d}</xml>`))
+  }
+  else {
+    let data = [
+        tutelageTempalte(req.body),
+        problemTemplate(req.body),
+        tutelageRefTempalte(),
+        worksheetTempalte(req.body),
+        worksheetRefTempalte(req.body)
+    ]
+    let xml = jsontoxml(data);
+    workSheets[newwrksheetName] = newwrksheetName;
+    fs.writeFileSync('public/xmls/worksheets.json', JSON.stringify(workSheets))
+    fs.writeFileSync('public/xmls/'+newwrksheetName+'.txt', JSON.stringify(data))
+    res.send(XMLFormatter(`<xml>${xml}</xml>`))
+  }
 });
 
 function genrateConstrains(references){
-	 let conditions = `<constraints>`;
-	 for(let x of references.conditions){
-	 	 var encodedStr = x.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
-		   return '&#'+i.charCodeAt(0)+';';
-		 });
-         conditions +=  `<cond>${encodedStr.toString()}</cond>`;
-	 }
-	 conditions += `</constraints>`;
-	 return conditions;
+  let conditions = `<constraints>`;
+  for(let x of references.conditions){
+    var encodedStr = x.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+      return '&#'+i.charCodeAt(0)+';';
+    });
+    conditions +=  `<cond>${encodedStr.toString()}</cond>`;
+  }
+  conditions += `</constraints>`;
+  return conditions;
 }
 
-
 let probRefsCollectionsStack = '';
-
 
 function uploadXLSX(workbook, inputfiletoread){
  //    var workbook = XLSX.readFile(`public/xmls/${inputfiletoread}`);
@@ -628,279 +645,293 @@ function uploadXLSX(workbook, inputfiletoread){
 	let variableChecker = 0;
 	var questionObj = {};
 	var arrayOfTemplateIdsCols = [];
-    questionObj['paramsArr'] = [];    
-    questionObj['prob_tmp_name'] = 'PR2064';
-    questionObj['ques_txt'] = '';
-    questionObj['ans_txt'] = '';
-    questionObj['fib_conditions'] = [];
-    questionObj['conditions'] = [];
-    questionObj['boxing'] = [];
-    questionObj['array'] = [];
-    var fibCondition = [];
-    var fibConditionRef = '';
+      questionObj['paramsArr'] = [];
+      questionObj['prob_tmp_name'] = 'PR2064';
+      questionObj['ques_txt'] = '';
+      questionObj['ans_txt'] = '';
+      questionObj['fib_conditions'] = [];
+      questionObj['conditions'] = [];
+      questionObj['boxing'] = [];
+      questionObj['array'] = [];
 
-   questionObj['slotLArray'] = [];
-   questionObj['slotRArray'] = [];
-   questionObj['slotLArraySolution'] = [];
-   
-   //bg
-   questionObj['x_point'] = [];
-   questionObj['y_value'] = [];
+  var fibCondition = [];
+  var fibConditionRef = '';
+
+      questionObj['slotLArray'] = [];
+      questionObj['slotRArray'] = [];
+      questionObj['slotLArraySolution'] = [];
+
+      //bg
+      questionObj['x_point'] = [];
+      questionObj['y_value'] = [];
 
     //MCQ
-    let mcqChioseCount = 1;
-    questionObj['mcq_choises'] = [];
+  let mcqChioseCount = 1;
+      questionObj['mcq_choises'] = [];
 
 
     //SUBQUESTION ARRAY
-    let subQuestionArray = [];
-    let subQuestionObj = {};
+  let subQuestionArray = [];
+  let subQuestionObj = {};
 
-	for(let arrEle of xlsxJSON){
-		 if(arrEle.col1=='Tutor ID'){
-		 	questionObj['work_tmp_name'] = arrEle.col2;
-            variableChecker = 1;
-		 }else if(arrEle.col1=='Conditions' || arrEle.col1=='Condition'){
-            variableChecker = 0;
-		 }
-		 if(arrEle.col1=='Problem ID'){
-		 	if(arrEle.col2!==undefined)
-		 	   questionObj['prob_tmp_name'] = arrEle.col2;
-		 }
-		 if(arrEle.col1=='Conditions' || arrEle.col1=='Condition'){
-		 	if(arrEle.col2!==undefined)
-		 	   questionObj['conditions'].push(arrEle.col2);
-		 }
-		 if(arrEle.col1=='Question'){
-	          if(arrEle.col2!==undefined){
-			 	   if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
-			 	   	  arrEle.col3 = arrEle.col3 || '';
-	                  questionObj['ques_txt'] += `<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`;
-			 	   }else
-			    	  questionObj['ques_txt'] += `<p>${arrEle.col2}</p>`;
-		 	  }
+	for(let arrEle of xlsxJSON) {
+    if(arrEle.col1=='Tutor ID') {
+      questionObj['work_tmp_name'] = arrEle.col2;
+      variableChecker = 1;
+    }
 
-		 	  subQuestionObj['mcq_question'] = questionObj['ques_txt'];
-		 }
-		 if(arrEle.col1=='QuesType'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['ques_type'] = arrEle.col2;
-		 	}
-		 }
-		 if(arrEle.col1=='Answer stem' || arrEle.col1=='Answer Stem'){
-		 	if(arrEle.col2!==undefined){
-		 	   if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
-		 	   	  arrEle.col3 = arrEle.col3 || '';
-                  questionObj['ans_txt'] += `<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`;
-		 	   }else
-		    	  questionObj['ans_txt'] += `<p>${arrEle.col2}</p>`;
-		 	}
-		 }
-		 if(arrEle.col1 && arrEle.col1.match('Choice') && arrEle.col1!=='Choice Answer' && arrEle.col2!==undefined){
-		 	   if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
-		 	   	  arrEle.col3 = arrEle.col3 || '';
-	              questionObj['mcq_choises'].push(`<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`)
-		 	   }else
-     		 	  questionObj['mcq_choises'].push(arrEle.col2)
+    else if(arrEle.col1=='Conditions' || arrEle.col1=='Condition') {
+      variableChecker = 0;
+    }
 
-     		   subQuestionObj['mcq_choises'] = questionObj['mcq_choises'];
-		 }
-		 if(arrEle.col1=='Choice Answer'){
-		 	if(arrEle.col2!=='' || arrEle.col2!==undefined){
-		 	   if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
-		 	   	  arrEle.col3 = arrEle.col3 || '';
-	              questionObj['mcq_answer'] = `<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`;
-		 	   }else
-     		 	  questionObj['mcq_answer'] = arrEle.col2;
+    if(arrEle.col1=='Problem ID'){
+      if(arrEle.col2!==undefined)
+      questionObj['prob_tmp_name'] = arrEle.col2;
+    }
 
-     		   subQuestionObj['mcq_answer'] = questionObj['mcq_answer'];
+    if(arrEle.col1=='Conditions' || arrEle.col1=='Condition'){
+      if(arrEle.col2!==undefined)
+      questionObj['conditions'].push(arrEle.col2);
+    }
 
-     		   subQuestionArray.push(subQuestionObj);
-     		   subQuestionObj = {};
-               
-               questionObj['mcq_answer'] = '';
-               questionObj['mcq_choises'] = [];
-               questionObj['ques_txt'] = '';
-		 	}
-		 }
-         if(arrEle.col1=='MCQ Question'){
-		 	if(arrEle.col2!=='' || arrEle.col2!==undefined)
-		 	   questionObj['mcq_question'] = arrEle.col2;
-		 } 
-		 if(arrEle.col1=='Boxing Group'){
-            questionObj['boxing'][0] = arrEle.col2;
-		 }
-		 ;
-		 if(arrEle.col1 && /^Slot.*R$/i.test(arrEle.col1)){
-		 	if(arrEle.col2!==undefined)
-               questionObj['slotRArray'].push(arrEle.col2)
-		 }
-		 if(arrEle.col1 && /^Slot.*L$/i.test(arrEle.col1)){
-		 	if(arrEle.col2!==undefined)
-               questionObj['slotLArray'].push(arrEle.col2)
-		 }
-		 if(arrEle.col1 && /^Slot.*Answer$/i.test(arrEle.col1)){
-		 	if(arrEle.col2!==undefined)
-               questionObj['slotLArraySolution'].push(arrEle.col2)
-		 }
-		 if(arrEle.col1=='Boxing Size'){
-            questionObj['boxing'][1] = arrEle.col2;
-		 }
-		 if(arrEle.col1=='Array Row'){
-            questionObj['array'][0] = arrEle.col2;
-		 }
-		 if(arrEle.col1=='Array Column'){
-            questionObj['array'][1] = arrEle.col2;
-		 }
-		 if(arrEle.col1=='Solution'){
-            questionObj['solution'] = arrEle.col2;
-		 }
-		 if(arrEle.col1=='Symbol'){
-            questionObj['symbol'] = arrEle.col2;
-		 }
-		 //aws
-         if(arrEle.col1 && arrEle.col1=='Limit'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['limit'] = arrEle.col2;
-		 	}
-		 }
-		 if(arrEle.col1 && arrEle.col1=='Count'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['count'] = arrEle.col2;
-		 	}
-		 }
-		 if(arrEle.col1 && arrEle.col1=='Array Row'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['array_row'] = arrEle.col2;
-		 	}
-		 }
-		 if(arrEle.col1 && arrEle.col1=='Array Column'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['array_column'] = arrEle.col2;
-		 	}
-		 }
-		 //clock
-		 if(arrEle.col1 && arrEle.col1=='Time'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['time'] = arrEle.col2;
-		 	}
-		 }
-		 //tape
-		 if(arrEle.col1 && arrEle.col1=='Tape'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['tape'] = arrEle.col2;
-		 	}
-		 }	 
-		 if(arrEle.col1 && arrEle.col1=='Order'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['order'] = arrEle.col2;
-		 	}
-		 }
-		 //number line 
-		 if(arrEle.col1 && arrEle.col1=='Start'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['start'] = arrEle.col2;
-		 	}
-		 }
-		 if(arrEle.col1 && arrEle.col1=='End'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['end'] = arrEle.col2;
-		 	}
-		 }
-		 if(arrEle.col1 && arrEle.col1=='Interval'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['interval'] = arrEle.col2;
-		 	}
-		 } 	 
-		 //ss
-		 if(arrEle.col1 && arrEle.col1=='Shading refrence'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['shading_ref'] = arrEle.col2;
-		 	}
-		 }
-		 //bg
-		 if(arrEle.col1 && arrEle.col1=='X axis title'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['x_axis_title'] = arrEle.col2;
-		 	}
-		 } 
-		 if(arrEle.col1 && arrEle.col1=='X axis Start'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['x_axis_start'] = arrEle.col2;
-		 	}
-		 } 
-		 if(arrEle.col1 && arrEle.col1=='X axis End'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['x_axis_end'] = arrEle.col2;
-		 	}
-		 } 
-		 if(arrEle.col1 && arrEle.col1=='X axis Interval'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['x_axis_interval'] = arrEle.col2;
-		 	}
-		 } 
-		 if(arrEle.col1 && arrEle.col1=='Y axis title'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['y_axis_title'] = arrEle.col2;
-		 	}
-		 } 
-		 if(arrEle.col1 && arrEle.col1=='Y axis Start'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['y_axis_start'] = arrEle.col2;
-		 	}
-		 } 
-		 if(arrEle.col1 && arrEle.col1=='Y axis End'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['y_axis_end'] = arrEle.col2;
-		 	}
-		 } 
-		 if(arrEle.col1 && arrEle.col1=='Y axis Interval'){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['y_axis_interval'] = arrEle.col2;
-		 	}
-		 } 
-		 if(arrEle.col1 && arrEle.col1.match('X point')){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['x_point'].push(arrEle.col2)
-		 	}
-		 }
-		 if(arrEle.col1 && arrEle.col1.match('Y value')){
-		 	if(arrEle.col2!==undefined){
-		 	   questionObj['y_value'].push(arrEle.col2)
-		 	}
-		 }
-		 if(arrEle.col1 && arrEle.col1.match('FIB_')){
-		 	if(arrEle.col2!==undefined){
-		 	   let count = arrEle.col1.split('_')[1];
-               fibConditionRef += `<cond><fib_ref name="fib${count}"/>==${arrEle.col2}</cond>`;
-               fibCondition.push(`<fib type="int" name="fib${count}"/>`);
-		 	}
-		 }
-		 if(variableChecker==1 && arrEle.col1!='Tutor ID' && arrEle.col1!='Variable' && arrEle.col2!==undefined){
-		 	questionObj['paramsArr'].push({
-                key : arrEle.col1,
-         	 	value : arrEle.col2,
-		        type : arrEle.col3
-            });
-		 } 
-	}
-    
+    if(arrEle.col1=='Question'){
+      if(arrEle.col2!==undefined){
+        if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
+          arrEle.col3 = arrEle.col3 || '';
+          questionObj['ques_txt'] += `<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`;
+        }
+        else {
+          questionObj['ques_txt'] += `<p>${arrEle.col2}</p>`;
+        }
+      }
+      subQuestionObj['mcq_question'] = questionObj['ques_txt'];
+    }
 
-    questionObj['fib_conditions'].push(fibCondition);
-    questionObj['fib_conditions'].push(fibConditionRef);
+    if(arrEle.col1=='QuesType'){
+      if(arrEle.col2!==undefined){
+        questionObj['ques_type'] = arrEle.col2;
+      }
+    }
 
-    questionObj['sub_questions'] = subQuestionArray;
+    if(arrEle.col1=='Answer stem' || arrEle.col1=='Answer Stem') {
+      if(arrEle.col2!==undefined) {
+        if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)) {
+          arrEle.col3 = arrEle.col3 || '';
+          questionObj['ans_txt'] += `<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`;
+        }
+        else {
+          questionObj['ans_txt'] += `<p>${arrEle.col2}</p>`;
+        }
+      }
+    }
 
-    let data = [
-	    	// tutelageTempalte(questionObj),
-	         problemTemplate(questionObj),
-	         //tutelageRefTempalte(),
-	         // worksheetTempalte(questionObj),
-	         // worksheetRefTempalte(questionObj)
-	    ]
-     let xml = jsontoxml(data);
-     probRefsCollectionsStack +=  worksheetTempalte(questionObj);
-     return xml;
+    if(arrEle.col1 && arrEle.col1.match('Choice') && arrEle.col1!=='Choice Answer' && arrEle.col2!==undefined){
+      if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
+        arrEle.col3 = arrEle.col3 || '';
+        questionObj['mcq_choises'].push(`<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`)
+      }
+      else {
+        questionObj['mcq_choises'].push(arrEle.col2)
+      }
+      subQuestionObj['mcq_choises'] = questionObj['mcq_choises'];
+    }
+
+    if(arrEle.col1=='Choice Answer'){
+    	if(arrEle.col2!=='' || arrEle.col2!==undefined){
+    	   if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
+    	   	  arrEle.col3 = arrEle.col3 || '';
+              questionObj['mcq_answer'] = `<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`;
+    	   }else
+    		 	  questionObj['mcq_answer'] = arrEle.col2;
+
+    		   subQuestionObj['mcq_answer'] = questionObj['mcq_answer'];
+
+    		   subQuestionArray.push(subQuestionObj);
+    		   subQuestionObj = {};
+
+             questionObj['mcq_answer'] = '';
+             questionObj['mcq_choises'] = [];
+             questionObj['ques_txt'] = '';
+    	}
+    }
+    if(arrEle.col1=='MCQ Question'){
+      if(arrEle.col2!=='' || arrEle.col2!==undefined)
+      questionObj['mcq_question'] = arrEle.col2;
+    }
+    if(arrEle.col1=='Boxing Group'){
+      questionObj['boxing'][0] = arrEle.col2;
+    }
+    ;
+    if(arrEle.col1 && /^Slot.*R$/i.test(arrEle.col1)){
+      if(arrEle.col2!==undefined)
+      questionObj['slotRArray'].push(arrEle.col2)
+    }
+    if(arrEle.col1 && /^Slot.*L$/i.test(arrEle.col1)){
+      if(arrEle.col2!==undefined)
+      questionObj['slotLArray'].push(arrEle.col2)
+    }
+    if(arrEle.col1 && /^Slot.*Answer$/i.test(arrEle.col1)){
+      if(arrEle.col2!==undefined)
+      questionObj['slotLArraySolution'].push(arrEle.col2)
+    }
+    if(arrEle.col1=='Boxing Size'){
+      questionObj['boxing'][1] = arrEle.col2;
+    }
+    if(arrEle.col1=='Array Row'){
+      questionObj['array'][0] = arrEle.col2;
+    }
+    if(arrEle.col1=='Array Column'){
+      questionObj['array'][1] = arrEle.col2;
+    }
+    if(arrEle.col1=='Solution'){
+      questionObj['solution'] = arrEle.col2;
+    }
+    if(arrEle.col1=='Symbol'){
+      questionObj['symbol'] = arrEle.col2;
+    }
+    //aws
+    if(arrEle.col1 && arrEle.col1=='Limit'){
+      if(arrEle.col2!==undefined){
+        questionObj['limit'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Count'){
+      if(arrEle.col2!==undefined){
+        questionObj['count'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Array Row'){
+      if(arrEle.col2!==undefined){
+        questionObj['array_row'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Array Column'){
+      if(arrEle.col2!==undefined){
+        questionObj['array_column'] = arrEle.col2;
+      }
+    }
+    //clock
+    if(arrEle.col1 && arrEle.col1=='Time'){
+      if(arrEle.col2!==undefined){
+        questionObj['time'] = arrEle.col2;
+      }
+    }
+    //tape
+    if(arrEle.col1 && arrEle.col1=='Tape'){
+      if(arrEle.col2!==undefined){
+        questionObj['tape'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Order'){
+      if(arrEle.col2!==undefined){
+        questionObj['order'] = arrEle.col2;
+      }
+    }
+    //number line
+    if(arrEle.col1 && arrEle.col1=='Start'){
+      if(arrEle.col2!==undefined){
+        questionObj['start'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='End'){
+      if(arrEle.col2!==undefined){
+        questionObj['end'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Interval'){
+      if(arrEle.col2!==undefined){
+        questionObj['interval'] = arrEle.col2;
+      }
+    }
+    //ss
+    if(arrEle.col1 && arrEle.col1=='Shading refrence'){
+      if(arrEle.col2!==undefined){
+        questionObj['shading_ref'] = arrEle.col2;
+      }
+    }
+    //bg
+    if(arrEle.col1 && arrEle.col1=='X axis title'){
+      if(arrEle.col2!==undefined){
+        questionObj['x_axis_title'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='X axis Start'){
+      if(arrEle.col2!==undefined){
+        questionObj['x_axis_start'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='X axis End'){
+      if(arrEle.col2!==undefined){
+        questionObj['x_axis_end'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='X axis Interval'){
+      if(arrEle.col2!==undefined){
+        questionObj['x_axis_interval'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Y axis title'){
+      if(arrEle.col2!==undefined){
+        questionObj['y_axis_title'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Y axis Start'){
+      if(arrEle.col2!==undefined){
+        questionObj['y_axis_start'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Y axis End'){
+      if(arrEle.col2!==undefined){
+        questionObj['y_axis_end'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Y axis Interval'){
+      if(arrEle.col2!==undefined){
+        questionObj['y_axis_interval'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1.match('X point')){
+      if(arrEle.col2!==undefined){
+        questionObj['x_point'].push(arrEle.col2)
+      }
+    }
+    if(arrEle.col1 && arrEle.col1.match('Y value')){
+      if(arrEle.col2!==undefined){
+        questionObj['y_value'].push(arrEle.col2)
+      }
+    }
+    if(arrEle.col1 && arrEle.col1.match('FIB_')){
+      if(arrEle.col2!==undefined){
+        let count = arrEle.col1.split('_')[1];
+        fibConditionRef += `<cond><fib_ref name="fib${count}"/>==${arrEle.col2}</cond>`;
+        fibCondition.push(`<fib type="int" name="fib${count}"/>`);
+      }
+    }
+    if(variableChecker==1 && arrEle.col1!='Tutor ID' && arrEle.col1!='Variable' && arrEle.col2!==undefined){
+      questionObj['paramsArr'].push({
+        key : arrEle.col1,
+        value : arrEle.col2,
+        type : arrEle.col3
+      });
+    }
+  }
+
+
+  questionObj['fib_conditions'].push(fibCondition);
+  questionObj['fib_conditions'].push(fibConditionRef);
+
+  questionObj['sub_questions'] = subQuestionArray;
+
+  let data = [
+    // tutelageTempalte(questionObj),
+    problemTemplate(questionObj),
+    //tutelageRefTempalte(),
+    // worksheetTempalte(questionObj),
+    // worksheetRefTempalte(questionObj)
+  ]
+  let xml = jsontoxml(data);
+  probRefsCollectionsStack +=  worksheetTempalte(questionObj);
+  return xml;
 }
 
 
@@ -910,9 +941,9 @@ app.post('/upload-xlsx', (req, res)=>{
 	    .on('file', function(name, file) {
 	        const tempPptFileName = uuidv4();
 	        console.log(tempPptFileName)
-            let xml = ''; 
+            let xml = '';
            // XLSX.writeFile(file.path+'.xlsx', 'public/xmls/'+tempPptFileName);
-  
+
 			//let workbook = XLSX.readFile(`public/xmls/${file.name}`);
 			let workbook = XLSX.readFile(`${file.path}`);
 			let sheet_name_list = workbook.SheetNames;
