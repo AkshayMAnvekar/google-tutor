@@ -311,7 +311,7 @@ function checkBoxing(references){
       B = references['boxing'][1],
       randonInt = Math.floor(Math.random() * 100);
 
-  return `<group><boxing name="BOX_${randonInt}" count="A*B" limit="Math.max(A-1,3)">$P$</boxing><solutions><solution><cond><boxing_ref name="BOX_${randonInt}" field="group"/> == $A$</cond><cond><boxing_ref name="BOX_${randonInt}" field="size"/> == $B$</cond></solution></solutions></group>`;
+  return `<group><boxing name="Boxing1" count="A*B" limit="Math.max(A-1,3)">$P$</boxing><solutions><solution><cond><boxing_ref name="Boxing1" field="group"/> == $A$</cond><cond><boxing_ref name="Boxing1" field="size"/> == $B$</cond></solution></solutions></group>`;
 }
 
 function multipleChoiseSolutionTemplate(ref){
@@ -341,7 +341,7 @@ function multipleChoiseSolutionTemplate(ref){
     let group = `<group>`;
     if(references.mcq_question || totalQuestions.length>1){
       mcqQuestions = `<p>${references.mcq_question}</p>`;
-      group = `<group name='${ref.prob_tmp_name}' type='MCQ'>`
+      group = `<group name="${ref.prob_tmp_name}" type="MCQ">`
     }
     //
     for(let x of references.mcq_choises){
@@ -372,17 +372,17 @@ function fibSolutionTemplate(references){
     }
     let group = `<group>`;
     if(references.mcq_question){
-       group = `<group name='${references.prob_tmp_name}' type='FIB'>`
+       group = `<group name="${references.prob_tmp_name}" type="FIB">`
     }
 	return `${group}${ans_txt}<solutions><solution>${references.fib_conditions[1]}</solution></solutions></group>`;
 }
 
 function arraySolutionTempalte(references){
-  let randonInt = Math.floor(Math.random() * 100),
-      array = `<array name="ARY${randonInt}" row="A" column="B" symbol="${references.symbol}"/>`,
+  // let randonInt = Math.floor(Math.random() * 100),
+      array = `<array name="Array1" row="A" column="B" symbol="${references.symbol}"/>`,
       solution = references.solution;
-  let fibSolution = `<solution><cond>${solution} == $A*B$</cond><cond><array_ref name="ARY${randonInt}" field="row"/>== $A$</cond><cond><array_ref name="ARY${randonInt}" field="column"/>== $B$</cond></solution>`;
-      fibSolution += `<solution><cond>${solution} == $A*B$</cond><cond><array_ref name="ARY${randonInt}" field="row"/>== $B$</cond><cond><array_ref name="ARY${randonInt}" field="column"/>== $A$</cond></solution>`;
+  let fibSolution = `<solution><cond>${solution} == $A*B$</cond><cond><array_ref name="Array1" field="row"/>== $A$</cond><cond><array_ref name="Array1" field="column"/>== $B$</cond></solution>`;
+      fibSolution += `<solution><cond>${solution} == $A*B$</cond><cond><array_ref name="Array1" field="row"/>== $B$</cond><cond><array_ref name="Array1" field="column"/>== $A$</cond></solution>`;
   return `<group>${references.ans_txt}${array}<solutions>${fibSolution}</solutions></group>`;
 }
 
@@ -417,11 +417,11 @@ function awsSolutionTemplate(references){
       references.array_row = references['paramsArr'][0]['value'];
       references.array_column = references['paramsArr'][1]['value'];
 
-  let colGrid = `<boxing_array name="ba1" count="${references.count}" limit="${references.limit}">$P$</boxing_array>`;
+  let colGrid = `<boxing_array name="BoxArr1" count="${references.count}" limit="${references.limit}">$P$</boxing_array>`;
   let totalElements = parseInt(references.array_row)*parseInt(references.array_column);
-  let solutionsRefers = `<solution><boxing_array_ref name="ba1"/>.row==${references.array_row}`;
-      solutionsRefers += `&& <boxing_array_ref name="ba1"/>.column==${references.array_column}`;
-      solutionsRefers += `<boxing_array_ref name="ba1"/>.row * <boxing_array_ref name="ba1"/>.column==${totalElements}</solution>`;
+  let solutionsRefers = `<solution><boxing_array_ref name="BoxArr1"/>.row==${references.array_row}`;
+      solutionsRefers += `&& <boxing_array_ref name="BoxArr1"/>.column==${references.array_column}`;
+      solutionsRefers += `<boxing_array_ref name="BoxArr1"/>.row * <boxing_array_ref name="BoxArr1"/>.column==${totalElements}</solution>`;
 
   return `<group>${colGrid}<solutions>${solutionsRefers}</solutions></group>`;
 }
