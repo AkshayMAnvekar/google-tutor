@@ -414,14 +414,13 @@ function boxSolutionTemplate(references){
 
 function awsSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
-      references.array_row = references['paramsArr'][0]['value'];
-      references.array_column = references['paramsArr'][1]['value'];
+      // references.array_row = references['paramsArr'][0]['value'];
+      // references.array_column = references['paramsArr'][1]['value'];
 
   let colGrid = `<boxing_array name="BoxArr1" count="${references.count}" limit="${references.limit}">$P$</boxing_array>`;
-  let totalElements = parseInt(references.array_row)*parseInt(references.array_column);
-  let solutionsRefers = `<solution><boxing_array_ref name="BoxArr1"/>.row==${references.array_row}`;
-      solutionsRefers += `&& <boxing_array_ref name="BoxArr1"/>.column==${references.array_column}`;
-      solutionsRefers += `<boxing_array_ref name="BoxArr1"/>.row * <boxing_array_ref name="BoxArr1"/>.column==${totalElements}</solution>`;
+  // let totalElements = parseInt(references.array_row)*parseInt(references.array_column);
+  let solutionsRefers = `<solution><cond><boxing_array_ref name="BoxArr1"/>.row==${references.array_row} && <boxing_array_ref name="BoxArr1"/>.column==${references.array_column}</cond>`;
+      solutionsRefers += `<cond><boxing_array_ref name="BoxArr1"/>.row * <boxing_array_ref name="BoxArr1"/>.column==$${references.array_row}*${references.array_column}$</cond></solution>`;
 
   return `<group>${colGrid}<solutions>${solutionsRefers}</solutions></group>`;
 }
@@ -443,8 +442,8 @@ function tapSolutionTemplate(references){
     k.push(a);
     --b;
   }
-  let tape = `<tape name="tape${randonInt}"/>`,
-      tapeRef = `<solution><cond><tape_ref name="tape${randonInt}"/>.inOrder(${k.toString()})<cond></solution>`;
+  let tape = `<tape name="tape1"/>`,
+      tapeRef = `<solution><cond><tape_ref name="tape1"/>.inOrder(${k.toString()})<cond></solution>`;
 
   return `<group>${references.ans_txt}${tape}<solutions>${tapeRef}</solutions></group>`;
 }
