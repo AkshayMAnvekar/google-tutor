@@ -443,7 +443,7 @@ function tapSolutionTemplate(references){
     --b;
   }
   let tape = `<tape name="tape1"/>`,
-      tapeRef = `<solution><cond><tape_ref name="tape1"/>.inOrder(${k.toString()})<cond></solution>`;
+      tapeRef = `<solution><cond><tape_ref name="tape1"/>.inOrder(${k.toString()})</cond></solution>`;
 
   return `<group>${references.ans_txt}${tape}<solutions>${tapeRef}</solutions></group>`;
 }
