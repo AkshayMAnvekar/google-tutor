@@ -435,13 +435,14 @@ function clockSolutionTemplate(references){
 
 function tapSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100),
-      a = `"${references['paramsArr'][0]['value']}"`,
+      a = `"${references['tape']}"`,
       k = [],
-      b = parseInt(references['paramsArr'][1]['value']);
+      b = parseInt(references['order']);
   while(b>0) {
     k.push(a);
     --b;
   }
+  console.log("A:",a,"B:",b,"K:",k);
   let tape = `<tape name="tape1"/>`,
       tapeRef = `<solution><cond><tape_ref name="tape1"/>.inOrder(${k.toString()})</cond></solution>`;
 
