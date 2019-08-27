@@ -482,8 +482,8 @@ function nblSolutionTemplate(references){
 
 function ssSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
-  let box = `<boxing_shading name="ss${randonInt}" count="${references.count}" limit="${references.limit}">$P$</boxing_shading>`,
-      boxRef = `<solution><cond><boxing_shading_ref name="ss${randonInt}"/>==${references.shading_ref}</cond></solution>`;
+  let box = `<boxing_shading name="shading1" count="${references.count}" limit="${references.limit}">$P$</boxing_shading>`,
+      boxRef = `<solution><cond><boxing_shading_ref name="shading1"/>==${references.shading_ref}</cond></solution>`;
 
   return `<group>${references.ans_txt}${box}<solutions>${boxRef}</solutions></group>`;
 }
