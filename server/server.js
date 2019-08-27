@@ -382,7 +382,11 @@ function arraySolutionTempalte(references){
       array = `<array name="Array1" row="A" column="B" symbol="${references.symbol}"/>`,
       solution = references.solution;
   let fibSolution = `<solution><cond>${solution} == $A*B$</cond><cond><array_ref name="Array1" field="row"/>== $A$</cond><cond><array_ref name="Array1" field="column"/>== $B$</cond></solution>`;
+  if('Swap' in refrences) {
+    if(refrences['Swap'] == 1) {
       fibSolution += `<solution><cond>${solution} == $A*B$</cond><cond><array_ref name="Array1" field="row"/>== $B$</cond><cond><array_ref name="Array1" field="column"/>== $A$</cond></solution>`;
+    }
+  }
   return `<group>${references.ans_txt}${array}<solutions>${fibSolution}</solutions></group>`;
 }
 
@@ -420,9 +424,14 @@ function awsSolutionTemplate(references){
   let colGrid = `<boxing_array name="BoxArr1" count="${references.count}" limit="${references.limit}">$P$</boxing_array>`;
   // let totalElements = parseInt(references.array_row)*parseInt(references.array_column);
   let solutionsRefers = `<solution><cond><boxing_array_ref name="BoxArr1"/>.row==${references.array_row} && <boxing_array_ref name="BoxArr1"/>.column==${references.array_column}</cond>`;
-      solutionsRefers += `<cond><boxing_array_ref name="BoxArr1"/>.row * <boxing_array_ref name="BoxArr1"/>.column==$${references.array_row}*${references.array_column}$</cond></solution>`;
+  if('Swap' in refrences) {
+    if(refrences['Swap'] == 1) {
+      solutionsRefers += `<cond><boxing_array_ref name="BoxArr1"/>.row==${references.array_column} && <boxing_array_ref name="BoxArr1"/>.column==${references.array_row}</cond>`;
+      // solutionsRefers += `<cond><boxing_array_ref name="BoxArr1"/>.row * <boxing_array_ref name="BoxArr1"/>.column==$${references.array_row}*${references.array_column}$</cond></solution>`;
+    }
+  }
 
-  return `<group>${colGrid}<solutions>${solutionsRefers}</solutions></group>`;
+  return `<group>${colGrid}<solutions>${solutionsRefers}</solution></solutions></group>`;
 }
 
 function clockSolutionTemplate(references){
@@ -808,6 +817,11 @@ function uploadXLSX(workbook, inputfiletoread){
     if(arrEle.col1 && arrEle.col1=='Array Column'){
       if(arrEle.col2!==undefined){
         questionObj['array_column'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='Swap'){
+      if(arrEle.col2!==undefined){
+        questionObj['Swap'] = arrEle.col2;
       }
     }
     //clock
