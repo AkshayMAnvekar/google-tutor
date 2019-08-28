@@ -444,9 +444,9 @@ function clockSolutionTemplate(references){
 
 function tapSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100),
-      a = `"${references['tape']}"`,
+      a = `"${references['order']}"`,
       k = [],
-      b = parseInt(references['order']);
+      b = parseInt(references['tape']);
   while(b>0) {
     k.push(a);
     --b;
