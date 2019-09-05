@@ -190,6 +190,25 @@ function worksheetTempalte(references){
   //         ]
   // }
 }
+function tutrefTempalte(references, i = 0){
+  let prob_refs = [];
+  console.log(references.prob_tmp_name);
+  let tutid = references.prob_tmp_name;
+  let probRefs = `<tutelage_ref name="${tutid.replace("PR", "TU")}">`;
+  if (i === 0) {
+    console.log(references.ques_type);
+    if (references.paramsArr.length > 0){
+      for(let x of references.paramsArr){
+        if(x.type=='int')
+          probRefs += `<bind name="${x.key}" val="${x.key}"/>`;
+        // else
+          // probRefs += `<bind name="${x.key}" type="${x.type}"><img src="${x.value}" width="20px"/></bind>`;
+      }
+    }
+  }
+  return probRefs += `</tutelage_ref>`;
+
+}
 
 function problemRefTemplate(references){
   let prob_refs = [];
@@ -311,7 +330,7 @@ function checkBoxing(references){
       B = references['boxing'][1],
       randonInt = Math.floor(Math.random() * 100);
 
-  return `<group><boxing name="Boxing1" count="A*B" limit="Math.max(A-1,3)">$P$</boxing><solutions><solution><cond><boxing_ref name="Boxing1" field="group"/> == $A$</cond><cond><boxing_ref name="Boxing1" field="size"/> == $B$</cond></solution></solutions></group>`;
+  return `<group><boxing name="Boxing1" count="A*B" limit="Math.max(A-1,3)">$P$</boxing><solutions><solution><cond><boxing_ref name="Boxing1" field="group"/> == $A$</cond><cond><boxing_ref name="Boxing1" field="size"/> == $B$</cond></solution></solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function multipleChoiseSolutionTemplate(ref){
@@ -339,8 +358,8 @@ function multipleChoiseSolutionTemplate(ref){
     //FIB with MCQ
     let mcqQuestions = '';
     let group = `<group>`;
-    if(references.mcq_question || totalQuestions.length>1){
-      mcqQuestions = `<p>${references.mcq_question}</p>`;
+    if(ref.mcq_question || totalQuestions.length>1){
+      mcqQuestions = `${ref.mcq_question}`;
       group = `<group name="${ref.prob_tmp_name}" type="MCQ">`
     }
     //
@@ -353,7 +372,7 @@ function multipleChoiseSolutionTemplate(ref){
       choiseAnswer = references.mcq_answer.split(' ')[1];
     }
     let optionsWrapper = `<repeat val="${count}" index="i"><cond><choice_ref name="${alphabetArray[counter].toUpperCase()}$i+1$"/>==$(i)==(${parseInt(choiseAnswer)-1})$</cond></repeat>`;
-    finalQuestionXML += `${group}${mcqQuestions}${choises}<solutions><solution>${optionsWrapper}</solution></solutions></group>`;
+    finalQuestionXML += `${group}${mcqQuestions}${choises}<solutions><solution>${optionsWrapper}</solution></solutions>${tutrefTempalte(ref, 1)}</group>`;
     ++counter;
   }
   return finalQuestionXML;
@@ -374,7 +393,7 @@ function fibSolutionTemplate(references){
     if(references.mcq_question){
        group = `<group name="${references.prob_tmp_name}" type="FIB">`
     }
-	return `${group}${ans_txt}<solutions><solution>${references.fib_conditions[1]}</solution></solutions></group>`;
+	return `${group}${ans_txt}<solutions><solution>${references.fib_conditions[1]}</solution></solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function arraySolutionTempalte(references){
@@ -387,7 +406,7 @@ function arraySolutionTempalte(references){
       fibSolution += `<solution><cond>${solution} == $A*B$</cond><cond><array_ref name="Array1" field="row"/>== $B$</cond><cond><array_ref name="Array1" field="column"/>== $A$</cond></solution>`;
     }
   }
-  return `<group>${references.ans_txt}${array}<solutions>${fibSolution}</solutions></group>`;
+  return `<group>${references.ans_txt}${array}<solutions>${fibSolution}</solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function boxSolutionTemplate(references){
@@ -413,7 +432,7 @@ function boxSolutionTemplate(references){
     solutionsRefers += `<cond><slot_ref name="slot1_${y+1}"/>=={"slot2_${parseInt(a)+1}"}</cond>`;
   }
   solutionsRefers+= `</solution>`;
-  return `<group>${colGrid}<solutions>${solutionsRefers}<solution>${references.fib_conditions[1]}</solution></solutions></group>`;
+  return `<group>${colGrid}<solutions>${solutionsRefers}<solution>${references.fib_conditions[1]}</solution></solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function awsSolutionTemplate(references){
@@ -431,15 +450,15 @@ function awsSolutionTemplate(references){
     }
   }
 
-  return `<group>${colGrid}<solutions>${solutionsRefers}</solution></solutions></group>`;
+  return `<group>${colGrid}<solutions>${solutionsRefers}</solution></solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function clockSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100),
-      clock = `<clock name="clock${randonInt}"/>`,
-      clockRef = `<solution><cond><clock_ref name="clock${randonInt}"/>=="${references.time}"</cond></solution>`;
+      clock = `<clock name="clock1"/>`,
+      clockRef = `<solution><cond><clock_ref name="clock1"/>=="${references.time}"</cond></solution>`;
 
-  return `<group>${references.ans_txt}${clock}<solutions>${clockRef}</solutions></group>`;
+  return `<group>${references.ans_txt}${clock}<solutions>${clockRef}</solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function tapSolutionTemplate(references){
@@ -455,7 +474,7 @@ function tapSolutionTemplate(references){
   let tape = `<tape name="tape1"/>`,
       tapeRef = `<solution><cond><tape_ref name="tape1"/>.inOrder(${k.toString()})</cond></solution>`;
 
-  return `<group>${references.ans_txt}${tape}<solutions>${tapeRef}</solutions></group>`;
+  return `<group>${references.ans_txt}${tape}<solutions>${tapeRef}</solutions>${tutrefTempalte(references)}</group>`;
 }
 
 
@@ -466,18 +485,18 @@ function tapSolutionTemplate(references){
 // 	     let numberLine = `<number_linename="nbl${randonInt}"><start text="$A$:00"x="0"/><repeat val="(${references.end}/${references.interval}/)-1" index="i"><mark text="4:20" x = "$(i+1)*interval$"/>`;
 // 			 numberLine += `</repeat><end text="$A$:interval" x = "End"/></number_line>`;
 // 	     let numberLineRef = `<solution><cond><number_line_ref name="nbl${randonInt}"/>.containsExactly(${b}) </solution>`;
-// 	 return `<group>${references.ans_txt}${numberLine}<solutions>${numberLineRef}</solutions></group>`;
+// 	 return `<group>${references.ans_txt}${numberLine}<solutions>${numberLineRef}</solutions>${tutrefTempalte(references)}</group>`;
 // }
 
 function nblSolutionTemplate(references){
 // let randonInt = Math.floor(Math.random() * 100),
 // a = parseInt(references['paramsArr'][0]['value']),
 // b = parseInt(references['paramsArr'][1]['value']);
-  let numberLine = `<number_line name="nbl1"><start text="${references.start}"x="${references.start}"/><repeat val="(${references.end}/${references.interval}-1)" index="i"><mark text="${references.start}+(i+1)*${references.interval}" x = "${references.start}+(i+1)*${references.interval}"/>`;
+  let numberLine = `<number_line name="nbl1"><start text="${references.start}" x="${references.start}"/><repeat val="((${references.end}-${references.start})/(${references.interval})-1)" index="i"><mark text="${references.start}+(i+1)*${references.interval}" x="${references.start}+(i+1)*${references.interval}"/>`;
       numberLine += `</repeat><end text="${references.end}" x = "${references.end}"/></number_line>`;
   let numberLineRef = `<solution><cond><number_line_ref name="nbl1"/>.containsExactly("${references.point}")</cond></solution>`;
 
-  return `<group>${references.ans_txt}${numberLine}<solutions>${numberLineRef}</solutions></group>`;
+  return `<group>${references.ans_txt}${numberLine}<solutions>${numberLineRef}</solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function ssSolutionTemplate(references){
@@ -485,35 +504,35 @@ function ssSolutionTemplate(references){
   let box = `<boxing_shading name="shading1" count="${references.count}" limit="${references.limit}">$P$</boxing_shading>`,
       boxRef = `<solution><cond><boxing_shading_ref name="shading1"/>==${references.shading_ref}</cond></solution>`;
 
-  return `<group>${references.ans_txt}${box}<solutions>${boxRef}</solutions></group>`;
+  return `<group>${references.ans_txt}${box}<solutions>${boxRef}</solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function bgSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
-  let bg = `<bar name="bar${randonInt}" x-series="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
-      bg += `<line_plot name="lp${randonInt}" x-range="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+  let bg = `<bar name="bar1" x-series="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+      // bg += `<line_plot name="lp1" x-range="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
   let bgRef = `<solution>`;
 
   for(let x=0; x<references.y_value.length; x++){
-    bgRef += `<bar_ref name="bar${randonInt}" />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
+    bgRef += `<bar_ref name="bar1" />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
   }
   bgRef = bgRef.slice(0, -2);
   bgRef += `</solution>`;
-  return `<group>${references.ans_txt}${bg}<solutions>${bgRef}</solutions></group>`;
+  return `<group>${references.ans_txt}${bg}<solutions>${bgRef}</solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function lpSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
-  let lp = `<line_plot name="lp${randonInt}" x-range="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
-      lp += `<line_plot name="lp${randonInt}" x-series="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+  let lp = `<line_plot name="lp1" x-range="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+      lp += `<line_plot name="lp1" x-series="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
   let lpRef = `<solution>`;
 
   for(let x=0; x<references.y_value.length; x++){
-    lpRef += `<line_plot_ref name="bar${randonInt}" />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
+    lpRef += `<line_plot_ref name="bar1" />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
   }
   lpRef = lpRef.slice(0, -2);
   lpRef += `</solution>`;
-  return `<group>${references.ans_txt}${lp}<solutions>${lpRef}</solutions></group>`;
+  return `<group>${references.ans_txt}${lp}<solutions>${lpRef}</solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function normalSolutionTemplate(){
@@ -713,7 +732,7 @@ function uploadXLSX(workbook, inputfiletoread){
           questionObj['ques_txt'] += `<p>${arrEle.col2}</p>`;
         }
       }
-      subQuestionObj['mcq_question'] = questionObj['ques_txt'];
+      // subQuestionObj['mcq_question'] = questionObj['ques_txt'];
     }
 
     if(arrEle.col1=='QuesType'){
@@ -760,12 +779,13 @@ function uploadXLSX(workbook, inputfiletoread){
 
              questionObj['mcq_answer'] = '';
              questionObj['mcq_choises'] = [];
-             questionObj['ques_txt'] = '';
+            //  questionObj['ques_txt'] = '';
     	}
     }
     if(arrEle.col1=='MCQ Question'){
       if(arrEle.col2!=='' || arrEle.col2!==undefined)
-      questionObj['mcq_question'] = arrEle.col2;
+      questionObj['mcq_question'] = `<p>${arrEle.col2}</p>`;
+      console.log(questionObj.mcq_question, "aaaaaaaaaa")
     }
     if(arrEle.col1=='Boxing Group'){
       questionObj['boxing'][0] = arrEle.col2;
