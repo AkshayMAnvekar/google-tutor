@@ -371,6 +371,11 @@ function multipleChoiseSolutionTemplate(ref){
     if(references.mcq_answer && references.mcq_answer.match('Choice')){
       choiseAnswer = references.mcq_answer.split(' ')[1];
     }
+    console.log("Akshay", mcqQuestions);
+    if (mcqQuestions.includes("<p>undefined</p>")) {
+      mcqQuestions = '';
+    }
+    console.log("Akshay", mcqQuestions);
     let optionsWrapper = `<repeat val="${count}" index="i"><cond><choice_ref name="${alphabetArray[counter].toUpperCase()}$i+1$"/>==$(i)==(${parseInt(choiseAnswer)-1})$</cond></repeat>`;
     finalQuestionXML += `${group}${mcqQuestions}${choises}<solutions><solution>${optionsWrapper}</solution></solutions>${tutrefTempalte(ref, 1)}</group>`;
     ++counter;
@@ -423,13 +428,13 @@ function boxSolutionTemplate(references){
       b = b.replace('<FIB_'+fibCounter+'>', `<fib type="int" name="fib${fibCounter}"/>`);
       ++fibCounter;;
     }
-    colGrid += `<cell><slot name="slot1_${x+1}">${a}</slot></cell><cell><slot name="slot2_${x+1}">${b}</slot></cell>`;
+    colGrid += `<cell><slot name="slot${x+1}L">${a}</slot></cell><cell><slot name="slot${x+1}R">${b}</slot></cell>`;
   }
   colGrid += `</grid>`;
   let solutionsRefers = `<solution>`;
   for(let y=0; y<references.slotLArraySolution.length; y++){
     let a = references.slotLArraySolution[y][references.slotLArraySolution[y].length-2];
-    solutionsRefers += `<cond><slot_ref name="slot1_${y+1}"/>=={"slot2_${parseInt(a)+1}"}</cond>`;
+    solutionsRefers += `<cond><slot_ref name="slot${y + 1}L"/>.containsExactly{"slot${parseInt(a)+1}R"}</cond>`;
   }
   solutionsRefers+= `</solution>`;
   return `<group>${colGrid}<solutions>${solutionsRefers}<solution>${references.fib_conditions[1]}</solution></solutions>${tutrefTempalte(references)}</group>`;
@@ -509,14 +514,14 @@ function ssSolutionTemplate(references){
 
 function bgSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
-  let bg = `<bar name="bar1" x-series="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+  let bg = `<bar name="bar1" x-series="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" show-x-gridlines="true", show-y-gridlines="false" width="200" height="100"/>`;
       // bg += `<line_plot name="lp1" x-range="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
   let bgRef = `<solution>`;
 
   for(let x=0; x<references.y_value.length; x++){
-    bgRef += `<bar_ref name="bar1" />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
+    bgRef += `<cond><bar_ref name="bar1" />.columnHeightAtXIndex(${x})==${references.y_value[x]}</cond>`;
   }
-  bgRef = bgRef.slice(0, -2);
+  // bgRef = bgRef.slice(0, -2);
   bgRef += `</solution>`;
   return `<group>${references.ans_txt}${bg}<solutions>${bgRef}</solutions>${tutrefTempalte(references)}</group>`;
 }
@@ -524,13 +529,13 @@ function bgSolutionTemplate(references){
 function lpSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
   let lp = `<line_plot name="lp1" x-range="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
-      lp += `<line_plot name="lp1" x-series="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+      // lp += `<line_plot name="lp1" x-series="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
   let lpRef = `<solution>`;
 
   for(let x=0; x<references.y_value.length; x++){
-    lpRef += `<line_plot_ref name="bar1" />.columCountAtXValue(${x})==${references.y_value[x]} &&`;
+    lpRef += `<cond><line_plot_ref name="bar1" />.columCountAtXValue(${x})==${references.y_value[x]}</cond>`;
   }
-  lpRef = lpRef.slice(0, -2);
+  // lpRef = lpRef.slice(0, -2);
   lpRef += `</solution>`;
   return `<group>${references.ans_txt}${lp}<solutions>${lpRef}</solutions>${tutrefTempalte(references)}</group>`;
 }
