@@ -514,11 +514,13 @@ function ssSolutionTemplate(references){
 
 function bgSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
-  for (var x in references.x_point) {
-    var a = '';
-    a += `"${x}"`;
+  var k = [];
+  var a = '';
+  for (var x of references.x_point) {
+    a = `"${x}"`;
+    k.push(a);
   }
-  let bg = `<bar name="bar1" x-series="[${a.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" show-x-gridlines="true", show-y-gridlines="false" width="200" height="100"/>`;
+  let bg = `<bar name="bar1" x-series="[${k.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" show-x-gridlines="true", show-y-gridlines="false" width="200" height="100"/>`;
       // bg += `<line_plot name="lp1" x-range="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
   let bgRef = `<solution>`;
 
@@ -532,11 +534,13 @@ function bgSolutionTemplate(references){
 
 function lpSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
-  for (var x in references.x_point) {
-    var a = '';
-    a += `"${x}"`;
+  var a = '';
+  var k = [];
+  for (var x of references.x_point) {
+    a = `"${x}"`;
+    k.push(a);
   }
-  let lp = `<line_plot name="lp1" x-series="[${a.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+  let lp = `<line_plot name="lp1" x-series="[${k.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
       // lp += `<line_plot name="lp1" x-series="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
   let lpRef = `<solution>`;
 
