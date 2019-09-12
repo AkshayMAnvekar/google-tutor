@@ -1008,7 +1008,7 @@ app.post('/upload-xlsx', (req, res)=>{
                 xml += uploadXLSX(workbook, x);
 			}
             let randonInt = Math.floor(Math.random() * 100);
-			let workSheetCommnTemplate = `<worksheet_tmpl name="WSAAAAAAAAAAAAAAAA">${probRefsCollectionsStack}</worksheet_tmpl><worksheet_ref name="T1_1_WSM${randonInt}"/>`;
+        let workSheetCommnTemplate = `<worksheet_tmpl name="WSAAAAAAAAAAAAAAAA">${probRefsCollectionsStack}</worksheet_tmpl><worksheet_ref name="WSAAAAAAAAAAAAAAAA"/>`;
 
             // const xml = uploadXLSX(workbook, sheet_name_list[0]);
 	        //res.send(XMLFormatter(`<xml>${xml}${workSheetCommnTemplate}</xml>`))
