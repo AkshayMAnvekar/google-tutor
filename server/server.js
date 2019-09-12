@@ -514,7 +514,11 @@ function ssSolutionTemplate(references){
 
 function bgSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
-  let bg = `<bar name="bar1" x-series="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" show-x-gridlines="true", show-y-gridlines="false" width="200" height="100"/>`;
+  for (var x in references.x_point) {
+    var a = '';
+    a += `"${x}"`;
+  }
+  let bg = `<bar name="bar1" x-series="[${a.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" show-x-gridlines="true", show-y-gridlines="false" width="200" height="100"/>`;
       // bg += `<line_plot name="lp1" x-range="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
   let bgRef = `<solution>`;
 
@@ -528,12 +532,16 @@ function bgSolutionTemplate(references){
 
 function lpSolutionTemplate(references){
   let randonInt = Math.floor(Math.random() * 100);
-  let lp = `<line_plot name="lp1" x-range="[${references.x_point.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
+  for (var x in references.x_point) {
+    var a = '';
+    a += `"${x}"`;
+  }
+  let lp = `<line_plot name="lp1" x-series="[${a.toString()}]" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" y-label="${references.y_axis_title}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
       // lp += `<line_plot name="lp1" x-series="${references.x_axis_start},${references.x_axis_end},${references.x_axis_interval}" x-label="${references.x_axis_title}" y-range="${references.y_axis_start},${references.y_axis_end},${references.y_axis_interval}" show-y-label="false" width="200" height="100" show-x-gridlines="false", show-y-gridlines="false"/>`;
   let lpRef = `<solution>`;
 
   for(let x=0; x<references.y_value.length; x++){
-    lpRef += `<cond><line_plot_ref name="bar1" />.columCountAtXValue(${x})==${references.y_value[x]}</cond>`;
+    lpRef += `<cond><line_plot_ref name="lp1" />.columCountAtXIndex(${x})==${references.y_value[x]}</cond>`;
   }
   // lpRef = lpRef.slice(0, -2);
   lpRef += `</solution>`;
