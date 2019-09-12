@@ -523,7 +523,7 @@ function bgSolutionTemplate(references){
   let bgRef = `<solution>`;
 
   for(let x=0; x<references.y_value.length; x++){
-    bgRef += `<cond><bar_ref name="bar1" />.columnHeightAtXIndex(${x})==${references.y_value[x]}</cond>`;
+    bgRef += `<cond><bar_ref name="bar1"/>.columnHeightAtXIndex(${x})==${references.y_value[x]}</cond>`;
   }
   // bgRef = bgRef.slice(0, -2);
   bgRef += `</solution>`;
@@ -541,7 +541,7 @@ function lpSolutionTemplate(references){
   let lpRef = `<solution>`;
 
   for(let x=0; x<references.y_value.length; x++){
-    lpRef += `<cond><line_plot_ref name="lp1" />.columCountAtXIndex(${x})==${references.y_value[x]}</cond>`;
+    lpRef += `<cond><line_plot_ref name="lp1"/>.columCountAtXIndex(${x})==${references.y_value[x]}</cond>`;
   }
   // lpRef = lpRef.slice(0, -2);
   lpRef += `</solution>`;
