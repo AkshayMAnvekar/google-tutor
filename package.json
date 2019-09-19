@@ -29,6 +29,10 @@
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
     "uuid": "^3.3.3",
+    "webpack": "^4.40.2",
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-middleware": "^3.7.1",
+    "webpack-hot-middleware": "^2.25.0",
     "webpack-node-externals": "^1.7.2",
     "xlsx": "^0.14.5",
     "xml-formatter": "^1.1.0"
