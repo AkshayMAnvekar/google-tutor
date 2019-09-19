@@ -348,7 +348,7 @@ function multipleChoiseSolutionTemplate(ref){
   let finalQuestionXML = '';
   let alphabetArray= "abcdefghikjklmnopqrstuvwxyzabcdefghikjklmnopqrstuvwxyz";
   let counter = 2;
-
+  let textArea = '<div><textarea rows="5" cols="40"/></div>';
   for(let references of totalQuestions){
     console.log(references);
     let count = references.mcq_choises.length;
@@ -377,14 +377,15 @@ function multipleChoiseSolutionTemplate(ref){
     }
     console.log("Akshay", mcqQuestions);
     let optionsWrapper = `<repeat val="${count}" index="i"><cond><choice_ref name="${alphabetArray[counter].toUpperCase()}$i+1$"/>==$(i)==(${parseInt(choiseAnswer)-1})$</cond></repeat>`;
-    finalQuestionXML += `${group}${mcqQuestions}${choises}<solutions><solution>${optionsWrapper}</solution></solutions>${tutrefTempalte(ref, 1)}</group>`;
+    finalQuestionXML += `${group}${mcqQuestions}${"ta" in ref ? textArea : ''}${choises}<solutions><solution>${optionsWrapper}</solution></solutions>${tutrefTempalte(ref, 1)}</group>`;
     ++counter;
   }
   return finalQuestionXML;
 }
 
 function fibSolutionTemplate(references){
-	let count = 1;
+  let count = 1;
+  let textArea = '<div><textarea rows="5" cols="40"/></div>';
 	let ans_txt = references.ans_txt;
 	for(let x of references.fib_conditions[0]){
         ans_txt = ans_txt.replace('<FIB_'+count+'>', x)
@@ -398,7 +399,7 @@ function fibSolutionTemplate(references){
     if(references.mcq_question){
        group = `<group name="${references.prob_tmp_name}" type="FIB">`
     }
-	return `${group}${ans_txt}<solutions><solution>${references.fib_conditions[1]}</solution></solutions>${tutrefTempalte(references)}</group>`;
+  return `${group}${"ta" in references ? textArea : ''}${ans_txt}<solutions><solution>${references.fib_conditions[1]}</solution></solutions>${tutrefTempalte(references)}</group>`;
 }
 
 function arraySolutionTempalte(references){
@@ -939,6 +940,11 @@ function uploadXLSX(workbook, inputfiletoread){
     if(arrEle.col1 && arrEle.col1=='Y axis End'){
       if(arrEle.col2!==undefined){
         questionObj['y_axis_end'] = arrEle.col2;
+      }
+    }
+    if(arrEle.col1 && arrEle.col1=='TA'){
+      if(arrEle.col2!==undefined){
+        questionObj['ta'] = arrEle.col2;
       }
     }
     if(arrEle.col1 && arrEle.col1=='Y axis Interval'){
