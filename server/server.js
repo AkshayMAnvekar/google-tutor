@@ -744,7 +744,7 @@ function uploadXLSX(workbook, inputfiletoread){
       if(arrEle.col2!==undefined){
         if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
           arrEle.col3 = arrEle.col3 || '';
-          questionObj['ques_txt'] += `<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`;
+          questionObj['ques_txt'] += `<p><img src="${arrEle.col2}" width="100px" alt="${arrEle.col3}"/></p>`;
         }
         else {
           questionObj['ques_txt'] += `<p>${arrEle.col2}</p>`;
@@ -763,7 +763,7 @@ function uploadXLSX(workbook, inputfiletoread){
       if(arrEle.col2!==undefined) {
         if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)) {
           arrEle.col3 = arrEle.col3 || '';
-          questionObj['ans_txt'] += `<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`;
+          questionObj['ans_txt'] += `<p><img src="${arrEle.col2}" width="100px" alt="${arrEle.col3}"/></p>`;
         }
         else {
           questionObj['ans_txt'] += `<p>${arrEle.col2}</p>`;
@@ -774,7 +774,7 @@ function uploadXLSX(workbook, inputfiletoread){
     if(arrEle.col1 && arrEle.col1.match('Choice') && arrEle.col1!=='Choice Answer' && arrEle.col2!==undefined){
       if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
         arrEle.col3 = arrEle.col3 || '';
-        questionObj['mcq_choises'].push(`<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`)
+        questionObj['mcq_choises'].push(`<p><img src="${arrEle.col2}" width="100px" alt="${arrEle.col3}"/></p>`)
       }
       else {
         questionObj['mcq_choises'].push(arrEle.col2)
@@ -786,7 +786,7 @@ function uploadXLSX(workbook, inputfiletoread){
     	if(arrEle.col2!=='' || arrEle.col2!==undefined){
     	   if(/(https?:\/\/.*\.(?:png|jpg|svg))/.test(arrEle.col2)){
     	   	  arrEle.col3 = arrEle.col3 || '';
-              questionObj['mcq_answer'] = `<p><img src="${arrEle.col2}" width="100" alt="${arrEle.col3}"/></p>`;
+              questionObj['mcq_answer'] = `<p><img src="${arrEle.col2}" width="100px" alt="${arrEle.col3}"/></p>`;
     	   }else
     		 	  questionObj['mcq_answer'] = arrEle.col2;
 
