@@ -546,7 +546,7 @@ function lpSolutionTemplate(references){
   let lpRef = `<solution>`;
 
   for(let x=0; x<references.y_value.length; x++){
-    lpRef += `<cond><line_plot_ref name="lp1"/>.columCountAtXIndex(${x})==${references.y_value[x]}</cond>`;
+    lpRef += `<cond><line_plot_ref name="lp1"/>.columnCountAtXIndex(${x})==${references.y_value[x]}</cond>`;
   }
   // lpRef = lpRef.slice(0, -2);
   lpRef += `</solution>`;
