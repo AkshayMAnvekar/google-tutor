@@ -348,7 +348,7 @@ function multipleChoiseSolutionTemplate(ref){
   let finalQuestionXML = '';
   let alphabetArray= "abcdefghikjklmnopqrstuvwxyzabcdefghikjklmnopqrstuvwxyz";
   let counter = 2;
-  let textArea = '<div><textarea rows="5" cols="40"/></div>';
+  let textArea = '<textarea rows="5" cols="40"/>';
   for(let references of totalQuestions){
     console.log(references);
     let count = references.mcq_choises.length;
@@ -385,7 +385,7 @@ function multipleChoiseSolutionTemplate(ref){
 
 function fibSolutionTemplate(references){
   let count = 1;
-  let textArea = '<div><textarea rows="5" cols="40"/></div>';
+  let textArea = '<textarea rows="5" cols="40"/>';
 	let ans_txt = references.ans_txt;
 	for(let x of references.fib_conditions[0]){
         ans_txt = ans_txt.replace('<FIB_'+count+'>', x)
@@ -435,7 +435,7 @@ function boxSolutionTemplate(references){
   let solutionsRefers = `<solution>`;
   for(let y=0; y<references.slotLArraySolution.length; y++){
     let a = references.slotLArraySolution[y][references.slotLArraySolution[y].length-2];
-    solutionsRefers += `<cond><slot_ref name="slot${y + 1}L"/>.containsExactly{"slot${parseInt(a)+1}R"}</cond>`;
+    solutionsRefers += `<cond><slot_ref name="slot${y + 1}L"/>.containsExactly{"slot${parseInt(a)}R"}</cond>`;
   }
   solutionsRefers+= `</solution>`;
   return `<group>${colGrid}<solutions>${solutionsRefers}<solution>${references.fib_conditions[1]}</solution></solutions>${tutrefTempalte(references)}</group>`;
