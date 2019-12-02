@@ -429,13 +429,13 @@ function boxSolutionTemplate(references){
       b = b.replace('<FIB_'+fibCounter+'>', `<fib type="int" name="fib${fibCounter}"/>`);
       ++fibCounter;;
     }
-    colGrid += `<cell><slot name="slot${x+1}L">${a}</slot></cell><cell><slot name="slot${x+1}R">${b}</slot></cell>`;
+    colGrid += `<cell><slot name="Slot${x+1}L">${a}</slot></cell><cell><slot name="Slot${x+1}R">${b}</slot></cell>`;
   }
   colGrid += `</grid>`;
   let solutionsRefers = `<solution>`;
   for(let y=0; y<references.slotLArraySolution.length; y++){
     let a = references.slotLArraySolution[y][references.slotLArraySolution[y].length-2];
-    solutionsRefers += `<cond><slot_ref name="slot${y + 1}L"/>.containsExactly{"slot${parseInt(a)}R"}</cond>`;
+    solutionsRefers += `<cond><slot_ref name="Slot${y + 1}L"/>.containsExactly{"slot${parseInt(a)}R"}</cond>`;
   }
   solutionsRefers+= `</solution>`;
   return `<group>${colGrid}<solutions>${solutionsRefers}<solution>${references.fib_conditions[1]}</solution></solutions>${tutrefTempalte(references)}</group>`;
@@ -902,6 +902,11 @@ function uploadXLSX(workbook, inputfiletoread){
     }
     //ss
     if(arrEle.col1 && arrEle.col1=='Shading refrence'){
+      if(arrEle.col2!==undefined){
+        questionObj['shading_ref'] = arrEle.col2;
+      }
+    }
+    if (arrEle.col1 && arrEle.col1 == 'Shading answer'){
       if(arrEle.col2!==undefined){
         questionObj['shading_ref'] = arrEle.col2;
       }
